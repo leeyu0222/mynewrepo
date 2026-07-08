@@ -11,7 +11,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="index.css?v=100">
+
 </head>
 <body>
     <!-- Fullscreen celebration confetti canvas -->
@@ -87,8 +88,9 @@
                         <span class="rec-quality">1080p 60fps</span>
                     </div>
 
-                    <!-- Audio sound settings -->
+                    <!-- Audio sound settings & Toilet -->
                     <button class="sound-control-btn" id="sound-toggle-btn">🔊 Sound On</button>
+                    <button class="toilet-control-btn" id="toilet-btn">🚽 화장실 다녀오기 (소화)</button>
 
                     <!-- Real-Time ASMR Mic Equalizer Graph -->
                     <div class="asmr-mic-meter">
@@ -146,38 +148,155 @@
 
                 <!-- Food Menu Board -->
                 <div class="menu-board">
-                    <h3 class="board-title">🍔 방송용 먹방 메뉴 세팅</h3>
+                    <h3 class="board-title">🍽️ 오늘의 먹방 메뉴판 <span class="menu-subtitle">미션 클리어로 잠금 해제!</span></h3>
+                    
+                    <!-- Basic Foods (Available from start) -->
+                    <div class="menu-section-label">🟢 기본 메뉴</div>
                     <div class="food-grid">
-                        <!-- Food 1: Spicy Tteokbokki -->
-                        <div class="food-item-card" data-food="tteokbokki">
+                        <!-- Food 1: 마라탕 -->
+                        <div class="food-item-card" data-food="maratang">
                             <div class="food-thumb">
-                                <img src="assets/tteokbokki.jpg" alt="떡볶이">
-                                <span class="food-flavor spicy-tag">🔥 매운맛</span>
+                                <img src="assets/maratang.jpg" alt="마라탕">
+                                <span class="food-flavor spicy-tag">🌶️ 마라</span>
                             </div>
                             <div class="food-details">
-                                <h4>불타는 매운 떡볶이</h4>
-                                <p>엽기 수준의 맵기! 미션 필수 단골 단골 메뉴</p>
+                                <h4>🔥 마라탕</h4>
+                                <p>얼얼하고 중독적인 마라 국물! 스코빌 대폭발 예정</p>
                                 <div class="food-spec">
-                                    <span>🌶️ 맵기: +45</span>
-                                    <span>😋 포만감: +15</span>
+                                    <span>🌶️ 맵기: +50</span>
+                                    <span>😋 포만감: +20</span>
                                 </div>
                                 <button class="feed-btn">한 입 먹이기</button>
                             </div>
                         </div>
 
-                        <!-- Food 2: Crispy Chicken -->
-                        <div class="food-item-card" data-food="fried_chicken">
+                        <!-- Food 2: 탕후루 -->
+                        <div class="food-item-card" data-food="tanghulu">
                             <div class="food-thumb">
-                                <img src="assets/fried_chicken.jpg" alt="치킨">
-                                <span class="food-flavor crispy-tag">🔊 ASMR 바삭</span>
+                                <img src="assets/tanghulu.png" alt="탕후루">
+                                <span class="food-flavor sweet-tag">🍭 달달</span>
                             </div>
                             <div class="food-details">
-                                <h4>황금 바삭 후라이드</h4>
-                                <p>바삭함 100%! 씹을 때 데시벨 소리가 폭발합니다</p>
+                                <h4>🍓 반짝 탕후루</h4>
+                                <p>와그작! 설탕막 ASMR 침샘 자극 한도초과</p>
                                 <div class="food-spec">
-                                    <span>🔊 데시벨: +50</span>
-                                    <span>😋 포만감: +35</span>
+                                    <span>🍭 단맛: +50</span>
+                                    <span>😋 포만감: +8</span>
                                 </div>
+                                <button class="feed-btn">한 입 먹이기</button>
+                            </div>
+                        </div>
+
+                        <!-- Food 3: 아이스크림 -->
+                        <div class="food-item-card" data-food="icecream">
+                            <div class="food-thumb">
+                                <img src="assets/icecream.png" alt="아이스크림">
+                                <span class="food-flavor cool-tag">❄️ 시원</span>
+                            </div>
+                            <div class="food-details">
+                                <h4>🍦 여름 아이스크림</h4>
+                                <p>매운맛 해소 필수템! 뚝딱 먹는 소리 귀 정화됨</p>
+                                <div class="food-spec">
+                                    <span>❄️ 해소: -20%</span>
+                                    <span>😋 포만감: +12</span>
+                                </div>
+                                <button class="feed-btn">한 입 먹이기</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mission-Locked Foods -->
+                    <div class="menu-section-label locked-label">🔒 미션 클리어 후 해금</div>
+                    <div class="food-grid locked-food-grid">
+                        <!-- Food 4: 빙수 (Mission unlock) -->
+                        <div class="food-item-card locked-card" data-food="bingsu" id="food-bingsu">
+                            <div class="food-thumb">
+                                <img src="assets/bingsu.png" alt="빙수">
+                                <span class="food-flavor cool-tag">❄️ 빙수</span>
+                                <div class="lock-overlay">
+                                    <span class="lock-icon">🔒</span>
+                                    <span class="lock-text">미션 1 클리어</span>
+                                </div>
+                            </div>
+                            <div class="food-details">
+                                <h4>🍧 설빙 과일 빙수</h4>
+                                <p>여름 먹방 끝판왕! SULBING 공식 메뉴</p>
+                                <div class="food-spec">
+                                    <span>❄️ 청량감: +60</span>
+                                    <span>😋 포만감: +25</span>
+                                </div>
+                                <button class="feed-btn locked-btn" disabled>미션 1 클리어 필요</button>
+                            </div>
+                        </div>
+
+                        <!-- Food 5: 슬러쉬 (Mission unlock) -->
+                        <div class="food-item-card locked-card" data-food="slush" id="food-slush">
+                            <div class="food-thumb">
+                                <img src="assets/slush.png" alt="슬러쉬">
+                                <span class="food-flavor cool-tag">🧊 슬러쉬</span>
+                                <div class="lock-overlay">
+                                    <span class="lock-icon">🔒</span>
+                                    <span class="lock-text">미션 2 클리어</span>
+                                </div>
+                            </div>
+                            <div class="food-details">
+                                <h4>🥤 과일 슬러쉬</h4>
+                                <p>오렌지x딸기! 들이켜는 소리 ASMR 장인</p>
+                                <div class="food-spec">
+                                    <span>🧊 청량감: +45</span>
+                                    <span>😋 포만감: +15</span>
+                                </div>
+                                <button class="feed-btn locked-btn" disabled>미션 2 클리어 필요</button>
+                            </div>
+                        </div>
+
+                        <!-- Food 6: 엽기떡볶이 (Mission unlock) -->
+                        <div class="food-item-card locked-card" data-food="yeobgi" id="food-yeobgi">
+                            <div class="food-thumb">
+                                <img src="assets/tteokbokki.jpg" alt="엽기떡볶이">
+                                <span class="food-flavor spicy-tag">💀 극한매운맛</span>
+                                <div class="lock-overlay">
+                                    <span class="lock-icon">🔒</span>
+                                    <span class="lock-text">미션 3 클리어</span>
+                                </div>
+                            </div>
+                            <div class="food-details">
+                                <h4>💀 엽기떡볶이</h4>
+                                <p>스코빌 10만! 보는 사람도 매운 전설의 그 음식</p>
+                                <div class="food-spec">
+                                    <span>🌶️ 맵기: +90</span>
+                                    <span>😋 포만감: +30</span>
+                                </div>
+                                <button class="feed-btn locked-btn" disabled>미션 3 클리어 필요</button>
+                            </div>
+                        </div>
+
+                        <!-- Food 7: Takis (Final Boss Mission) -->
+                        <div class="food-item-card locked-card boss-card" data-food="takis" id="food-takis">
+                            <div class="food-thumb takis-thumb">
+                                <div class="takis-visual">
+                                    <span class="takis-logo">TAKIS</span>
+                                    <div class="takis-chips">🌀🌀🌀</div>
+                                </div>
+                                <span class="food-flavor boss-tag">🏆 FINAL BOSS</span>
+                                <div class="lock-overlay boss-lock">
+                                    <span class="lock-icon">👑</span>
+                                    <span class="lock-text">모든 미션 클리어</span>
+                                </div>
+                            </div>
+                            <div class="food-details">
+                                <h4>🌀 TAKIS FUEGO</h4>
+                                <p>멕시코산 고문 스낵! 전 세계 먹방 유튜버 최고 난이도</p>
+                                <div class="food-spec">
+                                    <span>💀 맵기: +MAX</span>
+                                    <span>⭐ 슈퍼챗: +₩500K</span>
+                                </div>
+                                <button class="feed-btn locked-btn" disabled>모든 미션 클리어 필요</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                                 <button class="feed-btn">한 입 먹이기</button>
                             </div>
                         </div>
@@ -262,6 +381,7 @@
                             <div class="progress-fill fill-red" id="spice-bar" style="width: 0%"></div>
                         </div>
                     </div>
+
                 </div>
 
                 <!-- Upgrades / Level Shop -->
@@ -316,6 +436,6 @@
         </div>
     </div>
 
-    <script src="app.js"></script>
+    <script src="app.js?v=100"></script>
 </body>
 </html>
