@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>이은이의 말랑이 월드 🌸</title>
+  <meta name="description" content="나만의 귀여운 말랑이를 만들고, 쫀득하게 만지며, AI 상인과 밀당 거래를 즐겨보세요!">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="index.css">
+</head>
+<body>
+
+  <main class="app-container" id="app-root">
+
+    <!-- ==================== LOBBY PAGE ==================== -->
+    <section id="lobby-page" class="page active">
+      <header class="app-header">
+        <h1 class="logo-text">🌸 말랑이 월드</h1>
+        <p class="logo-subtext">귀엽고 쫀득한 나만의 말랑이 컬렉션</p>
+      </header>
+
+      <div class="modes-grid">
+        <article class="mode-card" id="go-simulator-btn">
+          <div class="mode-card-icon">🔮</div>
+          <div class="mode-card-info">
+            <h2>쫀득 시뮬레이터</h2>
+            <p>말랑이를 만지고 늘리며 스트레스 해소!</p>
+          </div>
+          <div class="mode-card-arrow">→</div>
+        </article>
+        <article class="mode-card" id="go-trading-btn">
+          <div class="mode-card-icon">⚖️</div>
+          <div class="mode-card-info">
+            <h2>말랑이 밀당 거래</h2>
+            <p>AI 상인과 말랑이 교환 딜을 성공시켜!</p>
+          </div>
+          <div class="mode-card-arrow">→</div>
+        </article>
+        <article class="mode-card" id="go-creator-btn">
+          <div class="mode-card-icon">🎨</div>
+          <div class="mode-card-info">
+            <h2>나만의 말랑이 만들기</h2>
+            <p>다양한 모양, 색상, 장식으로 커스텀!</p>
+          </div>
+          <div class="mode-card-arrow">→</div>
+        </article>
+      </div>
+
+      <div class="collection-header">
+        <h3>내 말랑이 보관함 (<span id="collection-count">0</span>개)</h3>
+        <button class="reset-collection-btn" id="reset-data-btn">초기화 🔄</button>
+      </div>
+      <div class="lobby-grid" id="lobby-collection-grid"></div>
+    </section>
+
+    <!-- ==================== SIMULATOR PAGE ==================== -->
+    <section id="simulator-page" class="page">
+      <header class="page-header">
+        <button class="back-btn" data-target="lobby">← 뒤로</button>
+        <h2>쫀득 시뮬레이터 🔮</h2>
+      </header>
+
+      <div class="sim-controls" id="sim-controls-row"></div>
+
+      <div class="sim-viewport">
+        <div id="sim-canvas-container" class="sim-canvas"></div>
+      </div>
+
+      <div class="sim-info">
+        <span class="sim-name" id="sim-mallang-name">말랑이</span>
+        <span class="sim-rarity-badge" id="sim-rarity-badge">Epic</span>
+      </div>
+
+      <div id="sim-rewax-container" class="sim-wax-container"></div>
+
+      <div class="sim-stats">
+        <div class="stat-chip"><span>💡</span><span>꾹 누르거나 드래그해봐요</span></div>
+      </div>
+    </section>
+
+    <!-- ==================== TRADING PAGE ==================== -->
+    <section id="trading-page" class="page">
+      <header class="page-header">
+        <button class="back-btn" data-target="lobby">← 뒤로</button>
+        <h2>밀당 거래판 ⚖️</h2>
+      </header>
+
+      <div class="trading-layout">
+        <div class="ai-shopkeeper-container">
+          <div class="ai-avatar" id="ai-avatar-wrapper">
+            <img src="trader.jpg" id="ai-trader-img" class="ai-trader-img state-idle" alt="AI 상인">
+            <div class="ai-state-overlay" id="ai-character-face"></div>
+          </div>
+          <div class="ai-info-col">
+            <div class="ai-name-badge">💎 제니 상인</div>
+            <div class="ai-speech-bubble">
+              <p id="ai-bubble-text">안녕! 네 말랑이를 거래판에 올려줘! ✌️</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="scale-container">
+          <div class="scale-bar-wrapper">
+            <div class="scale-bar" id="scale-bar">
+              <div class="scale-left-dish">나의 제안</div>
+              <div class="scale-right-dish">상인의 제안</div>
+            </div>
+            <div class="scale-stand"></div>
+          </div>
+        </div>
+
+        <div class="trade-table">
+          <div class="trade-board user-board">
+            <div class="board-header">내가 줄 말랑이 (<span id="trade-user-value">0 P</span>)</div>
+            <div class="trade-grid" id="trade-user-grid"></div>
+            <div class="trade-status-box">
+              <div class="status-light" id="user-status-indicator"></div>
+              <span>나의 수락 상태</span>
+            </div>
+          </div>
+          <div class="trade-board ai-board">
+            <div class="board-header">내가 받을 말랑이 (<span id="trade-ai-value">0 P</span>)</div>
+            <div class="trade-grid" id="trade-ai-grid"></div>
+            <div class="trade-status-box">
+              <div class="status-light" id="ai-status-indicator"></div>
+              <span>상인의 수락 상태</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="trade-controls">
+          <button class="trade-offer-btn" id="trade-decline-btn">거절 ❌</button>
+          <button class="trade-offer-btn" id="trade-ask-more-btn">더 달라 (+)</button>
+          <button class="trade-accept-btn" id="trade-accept-btn">승인 ✔️</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== DIY CREATOR PAGE ==================== -->
+    <section id="creator-page" class="page">
+      <header class="page-header">
+        <button class="back-btn" data-target="lobby">← 뒤로</button>
+        <h2>나만의 말랑이 🎨</h2>
+      </header>
+
+      <div class="creator-layout">
+        <div class="preview-panel">
+          <div class="preview-card">
+            <div id="diy-preview-container" class="preview-svg-box"></div>
+            <div class="form-group name-group">
+              <label for="diy-name">말랑이 이름</label>
+              <input type="text" id="diy-name" placeholder="이름을 입력해 주세요!" maxlength="10">
+            </div>
+          </div>
+        </div>
+
+        <div class="options-panel">
+          <fieldset class="editor-section">
+            <legend>1. 모양 선택</legend>
+            <div class="options-row">
+              <button class="option-btn" data-shape="circle">동그라미 ⚪</button>
+              <button class="option-btn" data-shape="cloud">구름 ☁️</button>
+              <button class="option-btn" data-shape="bear">곰 🐻</button>
+              <button class="option-btn" data-shape="heart">하트 ❤️</button>
+              <button class="option-btn" data-shape="star">별 ⭐</button>
+              <button class="option-btn" data-shape="cat">고양이 🐱</button>
+            </div>
+          </fieldset>
+
+          <fieldset class="editor-section">
+            <legend>2. 색상 커스텀</legend>
+            <div class="color-options-row">
+              <div class="color-pick-group">
+                <label for="diy-color">기본 색상</label>
+                <input type="color" id="diy-color" value="#ffc0cb">
+              </div>
+              <div class="checkbox-group">
+                <input type="checkbox" id="diy-gradient" checked>
+                <label for="diy-gradient">그라데이션</label>
+              </div>
+              <div class="color-pick-group" id="diy-color2-container">
+                <label for="diy-color2">두번째 색상</label>
+                <input type="color" id="diy-color2" value="#e0f7fa">
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset class="editor-section">
+            <legend>3. 표정 선택</legend>
+            <div class="options-row">
+              <button class="option-btn" data-face="smile">웃음 😊</button>
+              <button class="option-btn" data-face="wink">윙크 😉</button>
+              <button class="option-btn" data-face="blush">발그레 🥰</button>
+              <button class="option-btn" data-face="sleepy">쿨쿨 💤</button>
+              <button class="option-btn" data-face="shocked">깜짝 😮</button>
+              <button class="option-btn" data-face="crying">훌쩍 😭</button>
+            </div>
+          </fieldset>
+
+          <fieldset class="editor-section">
+            <legend>4. 장식품</legend>
+            <div class="options-row">
+              <button class="option-btn" data-accessory="none">없음 ❌</button>
+              <button class="option-btn" data-accessory="crown">왕관 👑</button>
+              <button class="option-btn" data-accessory="bow">리본 🎀</button>
+              <button class="option-btn" data-accessory="glasses">선글 😎</button>
+              <button class="option-btn" data-accessory="hat">마법모자 🧙</button>
+              <button class="option-btn" data-accessory="hairpin">별핀 ⭐</button>
+            </div>
+          </fieldset>
+
+          <fieldset class="editor-section">
+            <legend>5. 재질</legend>
+            <div class="options-row">
+              <button class="option-btn" data-material="normal">일반 ⚪</button>
+              <button class="option-btn" data-material="needoh">니도 🔵</button>
+              <button class="option-btn" data-material="wackpu">왁뿌볼 🥚</button>
+            </div>
+          </fieldset>
+
+          <fieldset class="editor-section">
+            <legend>6. 소리 선택 🔊</legend>
+            <div class="options-row">
+              <button class="option-btn" data-sound="normal">기본 뾱 🎵</button>
+              <button class="option-btn" data-sound="slime">슬라임 찐득 🫧</button>
+              <button class="option-btn" data-sound="butter">버터 콰자작 🧈</button>
+              <button class="option-btn" data-sound="pop">탱글 뾱뾱 🫧</button>
+              <button class="option-btn" data-sound="water">물방울 💧</button>
+              <button class="option-btn" data-sound="asmr">ASMR 바스락 🎧</button>
+            </div>
+          </fieldset>
+
+          <button class="diy-create-btn" id="diy-create-btn">말랑이 탄생시키기 🌸</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="sound.js"></script>
+  <script src="renderer.js"></script>
+  <script src="creator.js"></script>
+  <script src="simulator.js"></script>
+  <script src="trading.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
