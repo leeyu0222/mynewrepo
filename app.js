@@ -195,15 +195,17 @@ const MISSION_FAILED_CHATS = [
 const MEMBERSHIP_NAMES = ["쩝쩝단 우등회원", "대위장 크루", "실버벨 패밀리", "치비수호대"];
 
 // --- MISSION SYSTEM DATABASE ---
+// --- MISSION SYSTEM DATABASE ---
 const MISSION_TEMPLATES = [
     {
         type: "spicy_rush",
-        desc: "15초 안에 마라탕/엽떡 3번 먹이기! (매운맛 돌격)",
+        desc: "15초 안에 마라탕 3번 먹이기! (매운 국물 먹방)",
         duration: 15,
         target: 3,
         reward: 80000,
+        unlocked: () => true,
         check: (state, action) => {
-            if (action === 'feed' && (state.lastEatenFood === 'maratang' || state.lastEatenFood === 'yeobgi')) {
+            if (action === 'feed' && state.lastEatenFood === 'maratang') {
                 return 1;
             }
             return 0;
@@ -211,10 +213,11 @@ const MISSION_TEMPLATES = [
     },
     {
         type: "sweet_salty",
-        desc: "20초 안에 매운맛(마라탕/엽떡)과 단맛(탕후루/아이스크림) 번갈아 3번 먹이기!",
+        desc: "20초 안에 마라탕과 탕후루 번갈아 3번 먹이기! (단짠단짠 콤보)",
         duration: 20,
         target: 3,
         reward: 120000,
+        unlocked: () => true,
         check: (state, action) => {
             if (action === 'combo_sweet_salty') {
                 return 1;
@@ -224,12 +227,13 @@ const MISSION_TEMPLATES = [
     },
     {
         type: "asmr_volume",
-        desc: "12초 동안 탕후루 혹은 Takis 2번 먹여 ASMR 와그작 소리 유지하기!",
+        desc: "12초 동안 탕후루 2번 먹여 ASMR 와그작 소리 유지하기!",
         duration: 12,
         target: 2,
         reward: 70000,
+        unlocked: () => true,
         check: (state, action) => {
-            if (action === 'feed' && (state.lastEatenFood === 'tanghulu' || state.lastEatenFood === 'takis')) {
+            if (action === 'feed' && state.lastEatenFood === 'tanghulu') {
                 return 1;
             }
             return 0;
@@ -241,12 +245,70 @@ const MISSION_TEMPLATES = [
         duration: 15,
         target: 1,
         reward: 90000,
+        unlocked: () => true,
         check: (state, action) => {
             const fullnessPercent = (state.fullness / state.maxFullness) * 100;
             if (fullnessPercent >= 60) {
                 return 'continuous';
             }
             return 'broken';
+        }
+    },
+    // Locked missions - unlocked dynamically based on food unlock state
+    {
+        type: "bingsu_cool",
+        desc: "15초 안에 시원한 설빙 과일 빙수 2번 먹이기!",
+        duration: 15,
+        target: 2,
+        reward: 100000,
+        unlocked: (state) => state.missionsCompleted >= 1,
+        check: (state, action) => {
+            if (action === 'feed' && state.lastEatenFood === 'bingsu') {
+                return 1;
+            }
+            return 0;
+        }
+    },
+    {
+        type: "slush_slurp",
+        desc: "15초 안에 시원한 과일 슬러쉬 2번 먹이기!",
+        duration: 15,
+        target: 2,
+        reward: 110000,
+        unlocked: (state) => state.missionsCompleted >= 2,
+        check: (state, action) => {
+            if (action === 'feed' && state.lastEatenFood === 'slush') {
+                return 1;
+            }
+            return 0;
+        }
+    },
+    {
+        type: "yeobgi_challenge",
+        desc: "15초 안에 극한의 매운 엽기떡볶이 2번 먹이기! 💀",
+        duration: 15,
+        target: 2,
+        reward: 150000,
+        unlocked: (state) => state.missionsCompleted >= 3,
+        check: (state, action) => {
+            if (action === 'feed' && state.lastEatenFood === 'yeobgi') {
+                return 1;
+            }
+            return 0;
+        }
+    },
+    {
+        type: "takis_boss",
+        desc: "20초 안에 최종보스 고문스낵 Takis 1번 먹이기! 🌀🔥",
+        duration: 20,
+        target: 1,
+        reward: 200000,
+        unlocked: (state) => state.missionsCompleted >= 4,
+        check: (state, action) => {
+            if (action === 'feed' && state.lastEatenFood === 'takis') {
+                return 1;
+            }
+            return 0;
         }
     }
 ];
@@ -603,8 +665,10 @@ function tickSystem() {
             el.missionStatusTxt.textContent = `진행도: ${state.tteokbokkiCount} / ${state.activeMission.target}`;
         } else if (state.activeMission.type === 'asmr_volume') {
             el.missionStatusTxt.textContent = `진행도: ${state.crunchDuration} / ${state.activeMission.target}`;
-        } else {
+        } else if (state.activeMission.type === 'fullness_lock') {
             el.missionStatusTxt.textContent = state.activeMission.progress >= 1 ? "유지 중! 🟢" : "조건 미달! 🔴";
+        } else {
+            el.missionStatusTxt.textContent = `진행도: ${state.activeMission.progress || 0} / ${state.activeMission.target}`;
         }
         
         // Time over check
@@ -683,6 +747,23 @@ function feedFood(type, cardEl) {
             if (state.crunchDuration >= state.activeMission.target) {
                 state.activeMission.progress = state.activeMission.target;
             }
+        }
+
+        // Bingsu checking
+        if (state.activeMission.type === 'bingsu_cool' && type === 'bingsu') {
+            state.activeMission.progress = (state.activeMission.progress || 0) + 1;
+        }
+        // Slush checking
+        if (state.activeMission.type === 'slush_slurp' && type === 'slush') {
+            state.activeMission.progress = (state.activeMission.progress || 0) + 1;
+        }
+        // Yeobgi checking
+        if (state.activeMission.type === 'yeobgi_challenge' && type === 'yeobgi') {
+            state.activeMission.progress = (state.activeMission.progress || 0) + 1;
+        }
+        // Takis checking
+        if (state.activeMission.type === 'takis_boss' && type === 'takis') {
+            state.activeMission.progress = (state.activeMission.progress || 0) + 1;
         }
     }
 
@@ -854,7 +935,9 @@ function tickDigestionAndSpiceRecovery() {
 function triggerRandomMission() {
     if (state.activeMission) return;
     
-    const randTemplate = MISSION_TEMPLATES[Math.floor(Math.random() * MISSION_TEMPLATES.length)];
+    // Filter templates to only include unlocked ones
+    const availableTemplates = MISSION_TEMPLATES.filter(t => t.unlocked(state));
+    const randTemplate = availableTemplates[Math.floor(Math.random() * availableTemplates.length)];
     
     // Deep copy
     state.activeMission = {
