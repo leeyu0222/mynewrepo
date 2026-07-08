@@ -1,0 +1,354 @@
+/* ==========================================================================
+   MULTI-VERSE PLAY HUB - DESIGN SYSTEM & PORTAL CSS
+   ========================================================================== */
+:root {
+    --bg-main: #07070c;
+    --bg-panel: rgba(18, 18, 28, 0.85);
+    --border-color: rgba(255, 255, 255, 0.08);
+    --color-text: #f5f5fa;
+    --color-text-muted: #9e9eaf;
+    
+    --pink-neon: #ff66b2;
+    --pink-glow: rgba(255, 102, 178, 0.4);
+    
+    --purple-neon: #a020f0;
+    --purple-glow: rgba(160, 32, 240, 0.4);
+
+    --font-family: 'Outfit', 'Noto Sans KR', sans-serif;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--bg-main);
+    color: var(--color-text);
+    font-family: var(--font-family);
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+}
+
+/* Background animated elements */
+.glow-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    background: 
+        radial-gradient(circle 300px at 20% 30%, rgba(255,102,178,0.08) 0%, transparent 100%),
+        radial-gradient(circle 400px at 80% 70%, rgba(160,32,240,0.08) 0%, transparent 100%),
+        linear-gradient(180deg, #05050a 0%, #0d0d17 100%);
+}
+
+/* LOBBY VIEW */
+.lobby-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 60px 20px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.lobby-header {
+    text-align: center;
+    margin-bottom: 50px;
+}
+
+.logo-title {
+    font-size: 2.8rem;
+    font-weight: 900;
+    letter-spacing: -1.5px;
+    margin-bottom: 12px;
+}
+
+.logo-title span {
+    background: linear-gradient(90deg, var(--pink-neon) 0%, var(--purple-neon) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.logo-subtext {
+    font-size: 1.05rem;
+    color: var(--color-text-muted);
+    font-weight: 400;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* CARDS GRID */
+.platform-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 30px;
+    margin-bottom: 50px;
+}
+
+.platform-card {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-color);
+    border-radius: 24px;
+    overflow: hidden;
+    backdrop-filter: blur(12px);
+    display: flex;
+    flex-direction: column;
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    cursor: pointer;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.platform-card:hover {
+    transform: translateY(-8px);
+}
+
+.card-pink:hover {
+    border-color: var(--pink-neon);
+    box-shadow: 0 15px 40px var(--pink-glow);
+}
+
+.card-purple:hover {
+    border-color: var(--purple-neon);
+    box-shadow: 0 15px 40px var(--purple-glow);
+}
+
+.card-thumb {
+    height: 180px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.card-pink .card-thumb {
+    background: linear-gradient(135deg, #1e0b16 0%, #3a0d25 100%);
+}
+
+.card-purple .card-thumb {
+    background: linear-gradient(135deg, #110920 0%, #260d46 100%);
+}
+
+.card-icon {
+    font-size: 4.8rem;
+    filter: drop-shadow(0 0 15px rgba(255,255,255,0.2));
+    animation: iconFloat 4s ease-in-out infinite;
+}
+
+.card-pink .card-icon {
+    animation-delay: 0s;
+}
+.card-purple .card-icon {
+    animation-delay: 2s;
+}
+
+@keyframes iconFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+.game-tag {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    font-size: 0.72rem;
+    font-weight: 800;
+    padding: 4px 10px;
+    border-radius: 6px;
+    color: white;
+}
+
+.tag-pink { background: var(--pink-neon); }
+.tag-purple { background: var(--purple-neon); }
+
+.card-content {
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.card-content h2 {
+    font-size: 1.45rem;
+    font-weight: 800;
+    margin-bottom: 12px;
+}
+
+.card-content p {
+    font-size: 0.88rem;
+    color: var(--color-text-muted);
+    line-height: 1.6;
+    margin-bottom: 20px;
+    height: 70px;
+    overflow: hidden;
+}
+
+.card-features {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
+}
+
+.card-features span {
+    font-size: 0.7rem;
+    font-weight: 700;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.06);
+    padding: 4px 10px;
+    border-radius: 20px;
+    color: var(--color-text);
+}
+
+.play-btn {
+    margin-top: auto;
+    width: 100%;
+    padding: 12px;
+    border-radius: 12px;
+    font-family: var(--font-family);
+    font-weight: 700;
+    font-size: 0.95rem;
+    border: none;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.card-pink .play-btn {
+    background: linear-gradient(90deg, #ff4099 0%, #ff80c0 100%);
+    box-shadow: 0 4px 15px rgba(255, 64, 153, 0.3);
+}
+
+.card-pink .play-btn:hover {
+    background: linear-gradient(90deg, #ff1a80 0%, #ff66b2 100%);
+}
+
+.card-purple .play-btn {
+    background: linear-gradient(90deg, #8800ff 0%, #a84cff 100%);
+    box-shadow: 0 4px 15px rgba(136, 0, 255, 0.3);
+}
+
+.card-purple .play-btn:hover {
+    background: linear-gradient(90deg, #6e00d6 0%, #9424ff 100%);
+}
+
+.lobby-footer {
+    text-align: center;
+    font-size: 0.72rem;
+    color: var(--color-text-muted);
+    border-top: 1px solid var(--border-color);
+    padding-top: 30px;
+}
+
+.repo-link {
+    margin-top: 10px;
+}
+
+.repo-link a {
+    color: var(--color-text);
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.repo-link a:hover {
+    color: var(--pink-neon);
+}
+
+/* GAME VIEWPORT */
+.game-viewport {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: #030305;
+    z-index: 1000;
+}
+
+.viewport-nav {
+    height: 55px;
+    background: #0d0d14;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+}
+
+.back-to-lobby {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.08);
+    color: var(--color-text);
+    font-family: var(--font-family);
+    font-weight: 700;
+    font-size: 0.8rem;
+    padding: 8px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.back-to-lobby:hover {
+    background: rgba(255,255,255,0.12);
+}
+
+.active-game-title {
+    font-weight: 800;
+    font-size: 0.95rem;
+    color: white;
+}
+
+.viewport-controls {
+    display: flex;
+    gap: 10px;
+}
+
+.switch-game-btn, .fullscreen-btn {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.1);
+    color: var(--color-text-muted);
+    font-family: var(--font-family);
+    font-weight: 700;
+    font-size: 0.75rem;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.switch-game-btn:hover, .fullscreen-btn:hover {
+    color: white;
+    border-color: rgba(255,255,255,0.3);
+}
+
+.iframe-container {
+    flex: 1;
+    width: 100%;
+    position: relative;
+}
+
+#game-frame {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+/* RESPONSIVE DESIGN */
+@media (max-width: 850px) {
+    .platform-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    .logo-title {
+        font-size: 2.2rem;
+    }
+}
