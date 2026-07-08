@@ -17,6 +17,7 @@ const state = {
     isChewing: false,
     soundEnabled: true,
     silverAwardAchieved: false,
+    missionsCompleted: 0, // Track how many missions done for food unlock
     
     // Combo Tracking
     lastEatenFood: null,
@@ -38,49 +39,120 @@ const state = {
 
 // --- FOOD SPECS ---
 const FOODS = {
-    tteokbokki: {
-        name: "불타는 매운 떡볶이",
-        calorie: 350,
-        fullness: 15,
-        spice: 45,
-        chewDuration: 1800,
-        chewSound: "chewy",
+    maratang: {
+        name: "🔥 마라탕",
+        calorie: 650,
+        fullness: 20,
+        spice: 50,
+        chewDuration: 2000,
+        chewSound: "slurpy",
+        locked: false,
         comments: [
-            "습-하! 떡볶이 맵기 실화냐ㅋㅋㅋ",
-            "치비 매운 거 진짜 잘 먹네 ㄷㄷ",
-            "땀 뻘뻘 흘리는 거 졸귀ㅠㅠ",
-            "아 떡볶이 마렵다 진짜...",
-            "단짠 조합 먹어줘라 제발!"
-        ]
-    },
-    fried_chicken: {
-        name: "황금 바삭 후라이드",
-        calorie: 600,
-        fullness: 35,
-        spice: 0,
-        chewDuration: 2200,
-        chewSound: "crunchy",
-        comments: [
-            "바삭!!! 🔊 ASMR 폼 미쳤다",
-            "닭다리 뜯는 소리 귓가에 속삭이네",
-            "ASMR 마이크 값 하네요ㅋㅋㅋ",
-            "침 고인다... 야식 주문 완료",
-            "치킨 소리 쾌감 오진다 ㅠㅠ"
+            "마라 국물 소리 진짜 침샘 자극 ㄷㄷ",
+            "얼얼한 거 리액션 보소 ㅋㅋ",
+            "치비 마라 중독됐다 저거ㅋㅋ",
+            "마라탕 땡기게 하지 마ㅠㅠ",
+            "스코빌 얼마야 저거??"
         ]
     },
     tanghulu: {
-        name: "반짝 설탕막 딸기 탕후루",
+        name: "🍓 반짝 탕후루",
         calorie: 200,
         fullness: 8,
         spice: 0,
         chewDuration: 1500,
         chewSound: "glassy",
+        locked: false,
         comments: [
             "와그작 소리 미쳤다 ㄷㄷ",
             "탕후루 설탕 코팅 ASMR 종결자네",
             "치비 오늘 당 충전 제대로 하네!",
             "설탕막 얇은 거 보소 개존맛이겠다",
             "단짠단짠 가나요? ㅋㅋㅋ"
+        ]
+    },
+    icecream: {
+        name: "🍦 여름 아이스크림",
+        calorie: 280,
+        fullness: 12,
+        spice: -20,
+        chewDuration: 1200,
+        chewSound: "creamy",
+        locked: false,
+        comments: [
+            "매운 거 먹고 아이스크림 조합 ㄹㅇ 천재",
+            "녹기 전에 빨리 먹어야지 ㅋㅋ",
+            "아이스크림 먹는 소리도 ASMR이냐??",
+            "저 상큼함이 화면 통해서도 느껴짐",
+            "다이어트는 내일부터..."
+        ]
+    },
+    bingsu: {
+        name: "🍧 설빙 과일 빙수",
+        calorie: 420,
+        fullness: 25,
+        spice: -30,
+        chewDuration: 1800,
+        chewSound: "icy",
+        locked: true, // Unlocked after mission 1
+        missionRequired: 1,
+        comments: [
+            "설빙 빙수 ㄷㄷ 시원해보여",
+            "과일 빙수 조합 완벽하다",
+            "빙수 먹방 보면서 더위 씻어내는 중 ㅋ",
+            "저거 얼마나 달어?? 입에 침고임",
+            "미션 클리어 보상 빙수ㄷㄷ 레전드"
+        ]
+    },
+    slush: {
+        name: "🥤 과일 슬러쉬",
+        calorie: 310,
+        fullness: 15,
+        spice: -15,
+        chewDuration: 1300,
+        chewSound: "slurpy",
+        locked: true, // Unlocked after mission 2
+        missionRequired: 2,
+        comments: [
+            "슬러쉬 마시는 소리 ㄷㄷ ASMR",
+            "딸기 슬러쉬 갈증 자극하지 마라!!",
+            "오렌지x딸기 조합 신박하다",
+            "저거 마시면 뇌가 얼어붙겠다ㅋㅋ",
+            "미션 보상 슬러쉬 실화냐 ㄷㄷ"
+        ]
+    },
+    yeobgi: {
+        name: "💀 엽기떡볶이",
+        calorie: 780,
+        fullness: 30,
+        spice: 90,
+        chewDuration: 2400,
+        chewSound: "chewy",
+        locked: true, // Unlocked after mission 3
+        missionRequired: 3,
+        comments: [
+            "엽떡 ㄷㄷ 눈물 콧물 각이다",
+            "저 빨간색 보소 스코빌 10만 넘겠다",
+            "용감해 진짜... 나는 못 먹음",
+            "엽기 먹으면 반드시 아이스크림 필요",
+            "미션3 클리어자만 볼 수 있는 음식ㄷㄷ"
+        ]
+    },
+    takis: {
+        name: "🌀 TAKIS FUEGO",
+        calorie: 450,
+        fullness: 18,
+        spice: 100,
+        chewDuration: 2000,
+        chewSound: "crunchy",
+        locked: true, // Unlocked after all missions
+        missionRequired: 4, // All missions done
+        comments: [
+            "TAKIS ㄷㄷ 전 세계 먹방 유튜버 떨게 만드는 그 스낵",
+            "멕시코 스낵 맞음?? 정말 그렇게 매운 거야??",
+            "치비가 TAKIS 먹방 하면 구독 바로 누름",
+            "FUEGO 레전드 컬러 ㄷㄷ",
+            "최종 보스 음식 클리어!! 슈퍼챗 500K 발사!!"
         ]
     }
 };
@@ -287,6 +359,38 @@ function playSpicyBreath() {
     noise.start();
 }
 
+function playToiletFlushSound() {
+    if (!state.soundEnabled) return;
+    initAudio();
+    
+    // Create a 2.5 second noise buffer
+    const bufferSize = audioCtx.sampleRate * 2.5;
+    const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+
+    const noise = audioCtx.createBufferSource();
+    noise.buffer = buffer;
+
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(2000, audioCtx.currentTime);
+    // sweep the lowpass filter frequency down like a flush
+    filter.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 2.5);
+
+    const gainNode = audioCtx.createGain();
+    gainNode.gain.setValueAtTime(0.001, audioCtx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.3, audioCtx.currentTime + 0.15);
+    gainNode.gain.exponentialRampToValueAtTime(0.2, audioCtx.currentTime + 1.2);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 2.5);
+
+    noise.connect(filter);
+    filter.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+    noise.start();
+}
+
+
 // --- CONFETTI GRAPHICS ENGINE ---
 const canvas = document.getElementById('confetti-canvas');
 const ctx = canvas.getContext('2d');
@@ -376,6 +480,7 @@ const el = {
     fullnessBar: document.getElementById('fullness-bar'),
     spiceTxt: document.getElementById('spice-txt'),
     spiceBar: document.getElementById('spice-bar'),
+    toiletBtn: document.getElementById('toilet-btn'),
     
     // Chat
     chatMessages: document.getElementById('chat-messages'),
@@ -452,6 +557,9 @@ function setupEvents() {
     el.userChatInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') sendUserChat();
     });
+
+    // Toilet action
+    el.toiletBtn.addEventListener('click', goToToilet);
 }
 
 // --- CORE SYSTEM TICK (1s) ---
@@ -524,6 +632,12 @@ function feedFood(type, cardEl) {
     }
     const food = FOODS[type];
     if (!food) return;
+    
+    // Guard: don't allow eating locked foods
+    if (food.locked && (food.missionRequired > state.missionsCompleted)) {
+        showSpeechBalloon(`🔒 아직 잠긴 음식이에요! 미션 ${food.missionRequired}을 클리어하세요!`);
+        return;
+    }
 
     if (state.fullness + food.fullness > state.maxFullness) {
         showSpeechBalloon("더 이상 못 먹겠어요! ㅠㅠ 소화제가 급해!");
@@ -543,7 +657,7 @@ function feedFood(type, cardEl) {
     
     // Track missions criteria
     if (state.activeMission) {
-        if (state.activeMission.type === 'spicy_rush' && type === 'tteokbokki') {
+        if (state.activeMission.type === 'spicy_rush' && (type === 'maratang' || type === 'yeobgi')) {
             state.tteokbokkiCount++;
             if (state.tteokbokkiCount >= state.activeMission.target) {
                 state.activeMission.progress = state.activeMission.target;
@@ -552,8 +666,10 @@ function feedFood(type, cardEl) {
         
         if (state.activeMission.type === 'sweet_salty') {
             // Alternate sweet/salty check
-            if ((prevEaten === 'tteokbokki' && type === 'tanghulu') || 
-                (prevEaten === 'tanghulu' && type === 'tteokbokki')) {
+            if ((prevEaten === 'maratang' && type === 'tanghulu') || 
+                (prevEaten === 'tanghulu' && type === 'maratang') ||
+                (prevEaten === 'yeobgi' && type === 'icecream') ||
+                (prevEaten === 'icecream' && type === 'maratang')) {
                 state.sweetSaltyComboCount++;
                 spawnHeartParticles(10);
                 if (state.sweetSaltyComboCount >= state.activeMission.target) {
@@ -562,7 +678,7 @@ function feedFood(type, cardEl) {
             }
         }
 
-        if (state.activeMission.type === 'asmr_volume' && type === 'fried_chicken') {
+        if (state.activeMission.type === 'asmr_volume' && (type === 'tanghulu' || type === 'takis')) {
             state.crunchDuration++;
             if (state.crunchDuration >= state.activeMission.target) {
                 state.activeMission.progress = state.activeMission.target;
@@ -594,8 +710,11 @@ function feedFood(type, cardEl) {
         state.fullness += food.fullness;
         
         // Spicy damage modifier
-        if (type === 'tteokbokki') {
-            state.spiciness = Math.min(100, state.spiciness + 45);
+        if (food.spice > 0) {
+            state.spiciness = Math.min(100, state.spiciness + food.spice);
+        } else if (food.spice < 0) {
+            // Cooling effect from icecream, bingsu, slush
+            state.spiciness = Math.max(0, state.spiciness + food.spice);
         }
 
         playGulp();
@@ -608,6 +727,72 @@ function feedFood(type, cardEl) {
         // Random likes boost
         triggerLikesShower(5);
     }, chewDuration);
+}
+
+let toiletCooldownActive = false;
+
+function goToToilet() {
+    if (state.isChewing) {
+        showSpeechBalloon("아직 음식을 씹고 있어서 화장실에 갈 수 없어요! 😅");
+        return;
+    }
+    if (toiletCooldownActive) {
+        showSpeechBalloon("화장실은 자주 갈 수 없어요! 쿨다운 대기 중... 🚽");
+        return;
+    }
+    if (state.fullness === 0) {
+        showSpeechBalloon("위장이 이미 비어있어요! 먹방 먼저 합시다! 😋");
+        return;
+    }
+
+    // Start toilet sequence
+    toiletCooldownActive = true;
+    el.toiletBtn.disabled = true;
+    
+    // Play toilet sound
+    playToiletFlushSound();
+
+    // Hide character image during bathroom visit
+    el.avatarImg.style.opacity = '0';
+    showSpeechBalloon("🚽 화장실에서 소화 중... 잠시만요!");
+    addChatMessage("SYSTEM", "🚨 크리에이터가 급속 소화를 위해 화장실에 갔습니다. (3초)", "system");
+    
+    // Add funny viewer chat comments during toilet break
+    const toiletChats = [
+        "🚽 물소리 콸콸콸 머임 ㅋㅋㅋㅋㅋㅋㅋㅋ",
+        "치비 쾌변 기원 ㅋㅋㅋㅋㅋㅋ",
+        "자리를 비운 채널 ㅋㅋㅋㅋㅋ 방송사고냐고",
+        "ASMR 마이크 성능 화장실까지 가네 ㅋㅋㅋ",
+        "소화 다 하고 다시 폭풍 먹방 가자!!"
+    ];
+    toiletChats.forEach((msg, idx) => {
+        setTimeout(() => {
+            const randUser = RANDOM_USERNAMES[Math.floor(Math.random() * RANDOM_USERNAMES.length)];
+            addChatMessage(randUser, msg, "viewer");
+        }, (idx + 1) * 500);
+    });
+
+    // Make avatar reappear after 3 seconds, set fullness to 0
+    setTimeout(() => {
+        state.fullness = 0;
+        el.avatarImg.style.opacity = '1';
+        showSpeechBalloon("위장 비우기 완료! 다시 먹방 시작해볼까요? 😋");
+        addChatMessage("SYSTEM", "🟢 크리에이터 복귀! 위장 포만감이 0%로 초기화되었습니다.", "system");
+        updateUI();
+    }, 3000);
+
+    // Cooldown logic (20 seconds)
+    let cooldownTimer = 20;
+    const cooldownInterval = setInterval(() => {
+        cooldownTimer--;
+        el.toiletBtn.textContent = `🚽 화장실 쿨다운: ${cooldownTimer}초`;
+        if (cooldownTimer <= 0) {
+            clearInterval(cooldownInterval);
+            toiletCooldownActive = false;
+            el.toiletBtn.disabled = false;
+            el.toiletBtn.textContent = "🚽 급속 소화! 화장실 다녀오기 (쿨다운: 20초)";
+        }
+    }, 1000);
 }
 
 // Animate food elements
@@ -692,6 +877,44 @@ function triggerRandomMission() {
     addChatMessage("SYSTEM", `🚨 새로운 실시간 방송 미션이 발생했습니다! [${state.activeMission.desc}]`, "system");
 }
 
+// --- FOOD UNLOCK BY MISSION ---
+function unlockFoodByMission(missionsCompleted) {
+    const unlockMap = {
+        1: 'food-bingsu',
+        2: 'food-slush',
+        3: 'food-yeobgi',
+        4: 'food-takis'
+    };
+    
+    const foodId = unlockMap[missionsCompleted];
+    if (!foodId) return;
+    
+    const foodCard = document.getElementById(foodId);
+    if (!foodCard) return;
+    
+    // Unlock the card
+    foodCard.classList.add('unlocked');
+    
+    // Enable the button
+    const btn = foodCard.querySelector('.locked-btn');
+    if (btn) {
+        btn.disabled = false;
+        btn.classList.remove('locked-btn');
+        btn.textContent = '한 입 먹이기';
+    }
+    
+    // Show unlock notification in chat
+    const foodNames = {
+        'food-bingsu': '🍧 설빙 과일 빙수',
+        'food-slush': '🥤 과일 슬러쉬',
+        'food-yeobgi': '💀 엽기떡볶이',
+        'food-takis': '🌀 TAKIS FUEGO'
+    };
+    
+    addChatMessage("SYSTEM", `🔓 새 음식 해금!! [${foodNames[foodId]}] 이제 먹을 수 있어요!`, "system");
+    showSpeechBalloon(`새 음식 해금!! ${foodNames[foodId]} 🔓`);
+}
+
 function evalMissionEnd() {
     const mission = state.activeMission;
     if (!mission) return;
@@ -711,10 +934,14 @@ function evalMissionEnd() {
         const finalReward = Math.floor(mission.reward * bonusMultiplier);
         
         state.revenue += finalReward;
+        state.missionsCompleted++;
         
         // Subscriber boost
         const subBoost = Math.floor(Math.random() * 800) + 500;
         state.subscribers = Math.min(110000, state.subscribers + subBoost);
+        
+        // FOOD UNLOCK: unlock locked foods based on mission count
+        unlockFoodByMission(state.missionsCompleted);
         
         // Launch Super Chat Popup
         triggerSuperchatAlert(finalReward);
