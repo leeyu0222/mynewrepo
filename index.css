@@ -1,0 +1,883 @@
+/* ==========================================================================
+   DESIGN SYSTEM & VARIABLES
+   ========================================================================== */
+:root {
+    --bg-dark: #09090e;
+    --bg-panel: rgba(18, 18, 29, 0.7);
+    --border-color: rgba(255, 255, 255, 0.08);
+    --border-glow: rgba(0, 229, 255, 0.15);
+    
+    --color-text: #e2e8f0;
+    --color-text-muted: #94a3b8;
+    
+    /* Neon Accents */
+    --accent-pink: #ff2a85;
+    --accent-pink-glow: rgba(255, 42, 133, 0.4);
+    --accent-blue: #00f0ff;
+    --accent-blue-glow: rgba(0, 240, 255, 0.4);
+    --accent-gold: #ffd700;
+    --accent-gold-glow: rgba(255, 215, 0, 0.5);
+    --accent-green: #39ff14;
+    
+    --font-primary: 'Outfit', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+    --transition-smooth: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* ==========================================================================
+   GLOBAL RESET
+   ========================================================================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+}
+
+body {
+    background-color: var(--bg-dark);
+    color: var(--color-text);
+    font-family: var(--font-primary);
+    min-height: 100vh;
+    overflow-x: hidden;
+    background-image: 
+        radial-gradient(at 10% 10%, rgba(255, 42, 133, 0.05) 0px, transparent 50%),
+        radial-gradient(at 90% 90%, rgba(0, 240, 255, 0.05) 0px, transparent 50%);
+}
+
+.app-container {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    height: 100vh;
+    max-height: 1080px;
+}
+
+/* ==========================================================================
+   HEADER SECTION
+   ========================================================================== */
+.stream-header {
+    background: var(--bg-panel);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border-color);
+    padding: 15px 25px;
+    border-radius: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+.stream-title-group {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.live-badge {
+    background: #ff4b4b;
+    color: white;
+    font-weight: 800;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+    animation: pulse 1.5s infinite;
+}
+
+.stream-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+.stream-meta {
+    display: flex;
+    gap: 25px;
+    align-items: center;
+}
+
+.meta-item {
+    font-size: 0.95rem;
+    color: var(--color-text-muted);
+}
+
+.meta-value {
+    color: var(--color-text);
+    font-weight: 700;
+    margin-left: 4px;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ==========================================================================
+   LAYOUT GRID
+   ========================================================================== */
+.main-layout {
+    display: grid;
+    grid-template-columns: 360px 1fr 400px;
+    gap: 20px;
+    flex: 1;
+    min-height: 0; /* Important for scroll containers inside grid */
+}
+
+/* Common Panel Styling */
+.panel {
+    background: var(--bg-panel);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.panel-header {
+    padding: 18px 20px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.panel-header h2 {
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+/* ==========================================================================
+   LEFT PANEL: LIVE CHAT
+   ========================================================================== */
+.chat-panel {
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-status {
+    font-size: 0.75rem;
+    color: var(--accent-blue);
+    background: rgba(0, 240, 255, 0.1);
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-weight: 600;
+}
+
+.chat-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Chat Items */
+.chat-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 0.9rem;
+    padding: 8px 12px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid transparent;
+    animation: fadeInUp 0.3s ease forwards;
+}
+
+.chat-item.user-message {
+    background: rgba(0, 240, 255, 0.05);
+    border-color: rgba(0, 240, 255, 0.15);
+}
+
+.chat-item.donation-message {
+    background: rgba(255, 42, 133, 0.08);
+    border-color: rgba(255, 42, 133, 0.25);
+    box-shadow: 0 4px 15px rgba(255, 42, 133, 0.1);
+}
+
+.chat-username {
+    font-weight: 700;
+    color: var(--accent-blue);
+}
+
+.user-message .chat-username {
+    color: var(--accent-pink);
+}
+
+.donation-message .chat-username {
+    color: var(--accent-gold);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.chat-text {
+    line-height: 1.4;
+    word-break: break-all;
+}
+
+.chat-input-area {
+    padding: 15px;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    gap: 10px;
+    background: rgba(10, 10, 15, 0.4);
+}
+
+.chat-input-area input {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    color: white;
+    padding: 10px 15px;
+    font-family: var(--font-primary);
+    font-size: 0.9rem;
+    outline: none;
+    transition: var(--transition-smooth);
+}
+
+.chat-input-area input:focus {
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 10px var(--accent-blue-glow);
+}
+
+.chat-input-area button {
+    background: var(--accent-blue);
+    border: none;
+    color: #09090e;
+    font-weight: 700;
+    padding: 0 18px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-family: var(--font-primary);
+    transition: var(--transition-smooth);
+}
+
+.chat-input-area button:hover {
+    background: white;
+    box-shadow: 0 0 15px var(--accent-blue-glow);
+}
+
+/* ==========================================================================
+   CENTER PANEL: STREAM VIDEO SCREEN
+   ========================================================================== */
+.video-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    min-height: 0;
+}
+
+.stream-screen {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: #000;
+    border-radius: 20px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.stream-screen::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    box-shadow: inset 0 0 80px rgba(0, 0, 0, 0.8);
+    pointer-events: none;
+    z-index: 10;
+}
+
+/* Sound Toggle */
+.sound-toggle {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    z-index: 12;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 8px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 700;
+    font-family: var(--font-primary);
+    backdrop-filter: blur(8px);
+    transition: var(--transition-smooth);
+}
+
+.sound-toggle:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+/* Avatar Container */
+.avatar-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    position: relative;
+}
+
+.avatar-image {
+    height: 95%;
+    object-fit: contain;
+    transition: transform 0.1s ease;
+    user-select: none;
+}
+
+.avatar-container.chewing .avatar-image {
+    animation: bite 0.4s ease infinite;
+}
+
+.chewing-indicator {
+    position: absolute;
+    bottom: 80px;
+    background: rgba(0, 0, 0, 0.7);
+    color: var(--accent-green);
+    font-weight: 800;
+    padding: 6px 15px;
+    border-radius: 20px;
+    font-size: 0.95rem;
+    opacity: 0;
+    transform: scale(0.8);
+    transition: var(--transition-smooth);
+    z-index: 11;
+    pointer-events: none;
+}
+
+.avatar-container.chewing .chewing-indicator {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.reaction-bubble {
+    position: absolute;
+    bottom: 180px;
+    background: white;
+    color: black;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    opacity: 0;
+    transform: translateY(20px) scale(0.8);
+    transition: var(--transition-smooth);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    z-index: 11;
+    pointer-events: none;
+}
+
+.reaction-bubble::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 10px 10px 0;
+    border-style: solid;
+    border-color: white transparent;
+    display: block;
+    width: 0;
+}
+
+.reaction-bubble.active {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+/* Effect canvas/overlay layer */
+.effect-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 5;
+    pointer-events: none;
+}
+
+/* Donation popup overlay */
+.donation-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 20;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: var(--transition-smooth);
+}
+
+.donation-overlay.active {
+    opacity: 1;
+}
+
+.donation-alert-box {
+    background: linear-gradient(135deg, rgba(20, 20, 30, 0.95), rgba(40, 20, 60, 0.95));
+    border: 3px solid var(--accent-gold);
+    box-shadow: 0 0 35px var(--accent-gold-glow);
+    padding: 30px;
+    border-radius: 24px;
+    text-align: center;
+    max-width: 450px;
+    transform: scale(0.7);
+    transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.donation-overlay.active .donation-alert-box {
+    transform: scale(1);
+    animation: boxshake 0.5s infinite;
+}
+
+.star-animation {
+    font-size: 3rem;
+    animation: spin 3s linear infinite;
+    margin-bottom: 10px;
+}
+
+.donation-text {
+    font-size: 1.4rem;
+    font-weight: 800;
+    margin-bottom: 10px;
+}
+
+.donator-name {
+    color: var(--accent-blue);
+}
+
+.star-balloon-count {
+    color: var(--accent-gold);
+    text-shadow: 0 0 10px var(--accent-gold-glow);
+}
+
+.donation-message {
+    font-size: 1.1rem;
+    color: var(--color-text);
+    font-style: italic;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 10px 15px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* ==========================================================================
+   FOOD MENU TABLE
+   ========================================================================== */
+.food-table-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.section-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.food-menu {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    flex: 1;
+}
+
+.food-card {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: var(--transition-smooth);
+    position: relative;
+}
+
+.food-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--accent-blue);
+    box-shadow: 0 8px 25px rgba(0, 240, 255, 0.1);
+}
+
+.food-image-wrapper {
+    width: 100%;
+    aspect-ratio: 1.3;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.02);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.food-image-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.food-card:hover .food-image-wrapper img {
+    transform: scale(1.08);
+}
+
+.food-info {
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+}
+
+.food-name {
+    font-size: 0.95rem;
+    font-weight: 700;
+}
+
+.food-desc {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    line-height: 1.3;
+    height: 32px;
+    overflow: hidden;
+}
+
+.food-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px 10px;
+    font-size: 0.7rem;
+    color: var(--accent-blue);
+    font-weight: 600;
+}
+
+.feed-btn {
+    margin-top: auto;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    color: white;
+    font-weight: 700;
+    padding: 8px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-family: var(--font-primary);
+    font-size: 0.8rem;
+    transition: var(--transition-smooth);
+}
+
+.feed-btn:hover {
+    background: var(--accent-pink);
+    border-color: var(--accent-pink);
+    color: white;
+    box-shadow: 0 0 15px var(--accent-pink-glow);
+}
+
+/* ==========================================================================
+   RIGHT PANEL: STATS & UPGRADES
+   ========================================================================== */
+.stats-panel {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+.panel-section {
+    padding: 20px;
+}
+
+.panel-section:not(:last-child) {
+    border-bottom: 1px solid var(--border-color);
+}
+
+.panel-section h2 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin-bottom: 15px;
+    color: var(--color-text);
+}
+
+/* Progress Bars */
+.progress-bar-group {
+    margin-bottom: 15px;
+}
+
+.bar-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 5px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.02);
+}
+
+.bar-fill {
+    height: 100%;
+    border-radius: 5px;
+    width: 0%;
+    transition: width 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.fullness-fill {
+    background: linear-gradient(90deg, var(--accent-blue), #0099ff);
+    box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+}
+
+.spice-fill {
+    background: linear-gradient(90deg, #ff9900, var(--accent-pink));
+    box-shadow: 0 0 10px rgba(255, 42, 133, 0.3);
+}
+
+/* Stats Cards Grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.stat-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border-color);
+    padding: 15px;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.gold-card {
+    border-color: rgba(255, 215, 0, 0.15);
+    background: rgba(255, 215, 0, 0.02);
+}
+
+.stat-title {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    font-weight: 600;
+}
+
+.stat-value {
+    font-size: 1.15rem;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+}
+
+.gold-card .stat-value {
+    color: var(--accent-gold);
+    text-shadow: 0 0 8px rgba(255, 215, 0, 0.2);
+}
+
+/* Action Buttons / Control */
+.btn-group-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.action-btn {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border-color);
+    color: var(--color-text);
+    padding: 10px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-family: var(--font-primary);
+    font-weight: 700;
+    font-size: 0.8rem;
+    transition: var(--transition-smooth);
+}
+
+.action-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--accent-blue);
+}
+
+#simulate-donation-btn:hover {
+    background: rgba(255, 215, 0, 0.1);
+    border-color: var(--accent-gold);
+    color: var(--accent-gold);
+}
+
+/* Upgrades / Shop */
+.upgrade-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.upgrade-item {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border-color);
+    padding: 12px;
+    border-radius: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    transition: var(--transition-smooth);
+}
+
+.upgrade-item:hover {
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+.upgrade-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.upgrade-name {
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+.upgrade-level {
+    font-size: 0.75rem;
+    color: var(--accent-blue);
+    font-weight: 800;
+}
+
+.upgrade-desc {
+    font-size: 0.7rem;
+    color: var(--color-text-muted);
+    line-height: 1.3;
+}
+
+.upgrade-btn {
+    background: var(--accent-gold);
+    border: none;
+    color: #09090e;
+    font-weight: 800;
+    padding: 10px 15px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-family: var(--font-primary);
+    font-size: 0.8rem;
+    white-space: nowrap;
+    transition: var(--transition-smooth);
+}
+
+.upgrade-btn:hover {
+    background: white;
+    box-shadow: 0 0 15px var(--accent-gold-glow);
+}
+
+.upgrade-btn.maxed {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--color-text-muted);
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+/* ==========================================================================
+   ANIMATIONS & FLOATING PARTICLES
+   ========================================================================== */
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.6; }
+    100% { opacity: 1; }
+}
+
+@keyframes spin {
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes bite {
+    0% { transform: scale(1); }
+    50% { transform: scale(0.96) translateY(2px); }
+    100% { transform: scale(1); }
+}
+
+@keyframes boxshake {
+    0%, 100% { transform: scale(1) rotate(0deg); }
+    25% { transform: scale(1.02) rotate(-0.5deg); }
+    75% { transform: scale(1.02) rotate(0.5deg); }
+}
+
+/* Floating particles */
+.floating-particle {
+    position: absolute;
+    pointer-events: none;
+    font-size: 1.5rem;
+    animation: floatUp 1.2s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+    z-index: 15;
+}
+
+@keyframes floatUp {
+    0% {
+        opacity: 1;
+        transform: translate(0, 0) scale(0.8);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(var(--x), var(--y)) scale(1.4) rotate(var(--r));
+    }
+}
+
+/* Flying food element */
+.flying-food {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    z-index: 100;
+    pointer-events: none;
+    object-fit: cover;
+    animation: flyToMouth 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+@keyframes flyToMouth {
+    0% {
+        opacity: 1;
+        transform: translate(var(--start-x), var(--start-y)) scale(0.8);
+    }
+    85% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+        transform: translate(var(--end-x), var(--end-y)) scale(0.2);
+    }
+}
