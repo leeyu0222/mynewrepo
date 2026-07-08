@@ -1,349 +1,439 @@
 /* ==========================================================================
-   MUKBANG SIMULATOR - GAME ENGINE & SIMULATION LOGIC
+   YOUTUBE MUKBANG CREATOR SIMULATOR - SYSTEM ENGINE
    ========================================================================== */
 
 // --- GAME STATE ---
 const state = {
-    gold: 0,
+    subscribers: 98200,
+    goalSubscribers: 100000,
+    revenue: 0,
     calories: 0,
     fullness: 0,
     maxFullness: 100,
     spiciness: 0,
-    viewerCount: 150,
-    likeCount: 0,
-    streamTime: 0, // in seconds
+    viewerCount: 8400,
+    likeCount: 5200,
+    streamTime: 0,
     isChewing: false,
     soundEnabled: true,
+    silverAwardAchieved: false,
+    
+    // Combo Tracking
+    lastEatenFood: null,
+    tteokbokkiCount: 0,
+    tanghuluCount: 0,
+    sweetSaltyComboCount: 0,
+    crunchDuration: 0, // seconds maintained above 80% decibel
+    
+    // Active Mission State
+    activeMission: null,
     
     // Upgrades
     upgrades: {
-        speed: { level: 1, maxLevel: 5, costMultiplier: 1.8, baseCost: 50 },
-        stomach: { level: 1, maxLevel: 5, costMultiplier: 2.0, baseCost: 80 },
-        spice: { level: 1, maxLevel: 5, costMultiplier: 2.2, baseCost: 100 }
+        mic: { level: 1, maxLevel: 5, baseCost: 50000, costMultiplier: 1.8 },
+        water: { level: 1, maxLevel: 5, baseCost: 70000, costMultiplier: 2.0 },
+        stomach: { level: 1, maxLevel: 5, baseCost: 90000, costMultiplier: 2.2 }
     }
 };
 
-// --- FOOD DATABASE ---
+// --- FOOD SPECS ---
 const FOODS = {
     tteokbokki: {
-        name: "🔥 불타는 매운 떡볶이",
+        name: "불타는 매운 떡볶이",
         calorie: 350,
         fullness: 15,
-        spice: 35,
-        chatReactivity: 0.8,
-        reaction: "spicy",
+        spice: 45,
+        chewDuration: 1800,
         chewSound: "chewy",
-        chewDuration: 1800, // ms
-        messages: [
-            "맵부심 폭발!! 🌶️🌶️",
-            "치비 얼굴 벌개지는 거 넘 졸귀ㅋㅋㅋ",
-            "와 나도 떡볶이 시켰다",
-            "보는 내가 다 땀나네;;",
-            "습-하 소리 침샘자극 지대루다 ㄷㄷ"
+        comments: [
+            "습-하! 떡볶이 맵기 실화냐ㅋㅋㅋ",
+            "치비 매운 거 진짜 잘 먹네 ㄷㄷ",
+            "땀 뻘뻘 흘리는 거 졸귀ㅠㅠ",
+            "아 떡볶이 마렵다 진짜...",
+            "단짠 조합 먹어줘라 제발!"
         ]
     },
     fried_chicken: {
-        name: "🍗 황금 바삭 후라이드 치킨",
+        name: "황금 바삭 후라이드",
         calorie: 600,
         fullness: 35,
         spice: 0,
-        chatReactivity: 0.6,
-        reaction: "eating",
+        chewDuration: 2200,
         chewSound: "crunchy",
-        chewDuration: 2200, // ms
-        messages: [
-            "와 바삭 소리 미쳤다 🔊🔊",
-            "소리만 들어도 겉바속촉임",
-            "치킨 ASMR 레전드 갱신ㅋㅋㅋㅋ",
-            "침 질질 흐르는 중...🤤",
-            "1인 1닭 조지시네요 화이팅!"
+        comments: [
+            "바삭!!! 🔊 ASMR 폼 미쳤다",
+            "닭다리 뜯는 소리 귓가에 속삭이네",
+            "ASMR 마이크 값 하네요ㅋㅋㅋ",
+            "침 고인다... 야식 주문 완료",
+            "치킨 소리 쾌감 오진다 ㅠㅠ"
         ]
     },
     tanghulu: {
-        name: "🍓 반짝 설탕막 딸기 탕후루",
+        name: "반짝 설탕막 딸기 탕후루",
         calorie: 200,
         fullness: 8,
         spice: 0,
-        chatReactivity: 0.7,
-        reaction: "eating",
+        chewDuration: 1500,
         chewSound: "glassy",
-        chewDuration: 1500, // ms
-        messages: [
-            "달콤함 한도초과! 🍭✨",
-            "와지끈 씹는 소리 실화냐",
-            "탕후루는 못참지!!",
-            "도파민 터지는 ASMR이네 ㄷㄷ",
-            "설탕막 바삭함 미쳤다 진짜"
+        comments: [
+            "와그작 소리 미쳤다 ㄷㄷ",
+            "탕후루 설탕 코팅 ASMR 종결자네",
+            "치비 오늘 당 충전 제대로 하네!",
+            "설탕막 얇은 거 보소 개존맛이겠다",
+            "단짠단짠 가나요? ㅋㅋㅋ"
         ]
     }
 };
 
-// --- CHAT GENERATOR DATA ---
+// --- REALISTIC CHAT DIALECTS ---
 const RANDOM_USERNAMES = [
-    "밀가루요정", "치킨사냥꾼", "야식마니아", "먹방러버", "별풍요정", 
-    "프로침샘자극러", "다이어트는내일부터", "맛있으면0kcal", "배고픈대학생", 
-    "탄수화물중독", "코리안푸디", "쩝쩝박사", "배달의요정", "꿀꿀이"
+    "쩝쩝단_팀장", "먹방요정치비", "ASMR소리성애자", "야식딜리버리", "하꼬탈출기원",
+    "실버버튼가자", "탕후루중독자", "치킨은살안쪄요", "엽떡최고존엄", "슈퍼챗발사기",
+    "구독과좋아요", "침샘폭발러", "방구석미식가", "탄수화물이좋아", "프로소통러"
 ];
 
-const GENERAL_CHAT_MESSAGES = [
-    "스트리머님 안녕하세요!",
-    "소통 넘 잘해주시네요",
-    "오늘 텐션 무엇ㅋㅋㅋ",
-    "방금 구독 박았습니다!",
-    "맛깔나게 잘 드시네",
-    "리액션 짱이다",
-    "브금 정보 좀요",
-    "화질 개깔끔하네",
-    "인생 먹방 채널 찾음"
+const GENERAL_CHATS = [
+    "하꼬 탈출하고 대기업 가자!!",
+    "리액션 찰지네 ㅋㅋㅋ",
+    "구독 누르고 갑니다~",
+    "이 방 소통 잘해서 너무 편함",
+    "오늘 10만 찍고 실버버튼 언박싱 가자!",
+    "소리 퀄리티 왜케 좋음? ㄷㄷ",
+    "다이어트 포기하게 만드는 채널이네",
+    "치비 넘 귀엽다 진짜 ㅋㅋㅋ"
 ];
 
-const IDLE_CHAT_MESSAGES = [
-    "스트리머 뭐함? ㅋㅋㅋ",
-    "얼른 다음 음식 가자!",
-    "배부르신가요??",
-    "물 한잔 드세요!",
-    "메뉴 추가요~",
-    "냠냠치비 배 터지는 거 아님?"
+const IDLE_CHATS = [
+    "스트리머 멍때림? ㅋㅋㅋ",
+    "다음 음식 먹여줘라!!",
+    "물 한잔 마셔 치비야",
+    "배부른가? 숟가락 속도 느려짐",
+    "미션 언제 나옴? 슈퍼챗 쏠 장전 완료",
+    "먹방 끊기면 안 됨! 현기증 난단 말이에요"
 ];
 
-const DONATION_COMMENTS = [
-    "맛있게 먹는 모습 보기 좋아요! 화이팅!",
-    "오늘 야식 메뉴 치킨으로 정했습니다. 고마워요!",
-    "너무 귀엽다 ㅠㅠ 소소하게 후원하고 갑니다!",
-    "ASMR 사운드 최고네요! 고막 녹을 뻔ㅋㅋㅋ",
-    "더 맛있는 음식 많이 드시라고 쏩니다!",
-    "한 입만 권법 시전해주세요ㅋㅋㅋ"
+const MISSION_FAILED_CHATS = [
+    "아 미션 실패 개꿀ㅋㅋㅋ",
+    "컨트롤 실화냐? 까비",
+    "슈퍼챗 날아갔네 ㅠㅠ 아쉽",
+    "다음 미션 가자 다음꺼!",
+    "치비 배불러서 실패한 듯 ㅋㅋㅋ"
 ];
 
-// --- WEB AUDIO API PROCEDURAL SOUND SYNTHESIZER ---
+const MEMBERSHIP_NAMES = ["쩝쩝단 우등회원", "대위장 크루", "실버벨 패밀리", "치비수호대"];
+
+// --- MISSION SYSTEM DATABASE ---
+const MISSION_TEMPLATES = [
+    {
+        type: "spicy_rush",
+        desc: "15초 안에 매운 떡볶이 3번 먹이기!",
+        duration: 15,
+        target: 3,
+        reward: 80000,
+        check: (state, action) => {
+            if (action === 'feed' && state.lastEatenFood === 'tteokbokki') {
+                return 1;
+            }
+            return 0;
+        }
+    },
+    {
+        type: "sweet_salty",
+        desc: "20초 안에 떡볶이와 탕후루 번갈아 3번 먹이기! (단짠단짠 콤보)",
+        duration: 20,
+        target: 3,
+        reward: 120000,
+        check: (state, action) => {
+            if (action === 'combo_sweet_salty') {
+                return 1;
+            }
+            return 0;
+        }
+    },
+    {
+        type: "asmr_volume",
+        desc: "12초 동안 치킨 2번 먹여 ASMR 게이지 계속 자극하기!",
+        duration: 12,
+        target: 2,
+        reward: 70000,
+        check: (state, action) => {
+            if (action === 'feed' && state.lastEatenFood === 'fried_chicken') {
+                return 1;
+            }
+            return 0;
+        }
+    },
+    {
+        type: "fullness_lock",
+        desc: "15초 동안 포만감 게이지를 60% 이상으로 유지하기!",
+        duration: 15,
+        target: 1,
+        reward: 90000,
+        check: (state, action) => {
+            const fullnessPercent = (state.fullness / state.maxFullness) * 100;
+            if (fullnessPercent >= 60) {
+                return 'continuous';
+            }
+            return 'broken';
+        }
+    }
+];
+
+// --- WEB AUDIO ENGINE ---
 let audioCtx = null;
-
 function initAudio() {
-    if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    }
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 }
 
-// Generate filtered white noise for crunchy sounds
-function playProceduralCrunch(type) {
+function playCrunch(type) {
     if (!state.soundEnabled) return;
     initAudio();
-    if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-    }
+    if (audioCtx.state === 'suspended') audioCtx.resume();
 
-    const bufferSize = audioCtx.sampleRate * 0.15; // 150ms buffer
+    const bufferSize = audioCtx.sampleRate * 0.12;
     const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
     const data = buffer.getChannelData(0);
-    
-    // Fill with white noise
-    for (let i = 0; i < bufferSize; i++) {
-        data[i] = Math.random() * 2 - 1;
-    }
+    for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
 
-    const noiseNode = audioCtx.createBufferSource();
-    noiseNode.buffer = buffer;
-
-    // Filter creation
-    const filter = audioCtx.createBiquadFilter();
-    
-    // Configure based on chew type
-    if (type === 'crunchy') {
-        // High crisp crunch (e.g. fried chicken)
-        filter.type = 'bandpass';
-        filter.frequency.value = 2500;
-        filter.Q.value = 1.5;
-    } else if (type === 'glassy') {
-        // Glassy crackle (e.g. sugar shell tanghulu)
-        filter.type = 'highpass';
-        filter.frequency.value = 4000;
-    } else {
-        // Chewy soft squish (e.g. tteokbokki)
-        filter.type = 'lowpass';
-        filter.frequency.value = 1000;
-    }
-
-    const gainNode = audioCtx.createGain();
-    
-    // Quick biting envelope
-    gainNode.gain.setValueAtTime(0.01, audioCtx.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.2, audioCtx.currentTime + 0.01);
-    gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.12);
-
-    // Connections
-    noiseNode.connect(filter);
-    filter.connect(gainNode);
-    gainNode.connect(audioCtx.destination);
-    
-    noiseNode.start();
-    noiseNode.stop(audioCtx.currentTime + 0.15);
-}
-
-// Gulp sound sweep
-function playProceduralGulp() {
-    if (!state.soundEnabled) return;
-    initAudio();
-    
-    const osc = audioCtx.createOscillator();
-    const gainNode = audioCtx.createGain();
-    
-    osc.type = 'sine';
-    // Smooth frequency sweep upwards
-    osc.frequency.setValueAtTime(80, audioCtx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(190, audioCtx.currentTime + 0.25);
-    
-    // Envelope for gulping sound
-    gainNode.gain.setValueAtTime(0.001, audioCtx.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.3, audioCtx.currentTime + 0.05);
-    gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.25);
-    
-    osc.connect(gainNode);
-    gainNode.connect(audioCtx.destination);
-    
-    osc.start();
-    osc.stop(audioCtx.currentTime + 0.3);
-}
-
-// Donation sound arpeggio
-function playDonationChime() {
-    if (!state.soundEnabled) return;
-    initAudio();
-    
-    const notes = [261.63, 329.63, 392.00, 523.25, 659.25, 783.99]; // C major chord arpeggio
-    notes.forEach((freq, index) => {
-        const time = audioCtx.currentTime + index * 0.08;
-        
-        const osc = audioCtx.createOscillator();
-        const gainNode = audioCtx.createGain();
-        
-        osc.type = 'triangle';
-        osc.frequency.value = freq;
-        
-        gainNode.gain.setValueAtTime(0.12, time);
-        gainNode.gain.exponentialRampToValueAtTime(0.001, time + 0.4);
-        
-        osc.connect(gainNode);
-        gainNode.connect(audioCtx.destination);
-        
-        osc.start(time);
-        osc.stop(time + 0.4);
-    });
-}
-
-// Spicy breathing ("hoo-ha") sound
-function playSpicyBreath() {
-    if (!state.soundEnabled) return;
-    initAudio();
-    
-    // Noise buffer
-    const bufferSize = audioCtx.sampleRate * 0.4;
-    const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-    const data = buffer.getChannelData(0);
-    for (let i = 0; i < bufferSize; i++) {
-        data[i] = Math.random() * 2 - 1;
-    }
-    
     const noise = audioCtx.createBufferSource();
     noise.buffer = buffer;
-    
+
     const filter = audioCtx.createBiquadFilter();
-    filter.type = 'bandpass';
-    filter.frequency.value = 1000;
-    filter.Q.value = 2.0;
-    
+    if (type === 'crunchy') {
+        filter.type = 'bandpass';
+        filter.frequency.value = 2400;
+        filter.Q.value = 2.0;
+    } else if (type === 'glassy') {
+        filter.type = 'highpass';
+        filter.frequency.value = 3500;
+    } else {
+        filter.type = 'lowpass';
+        filter.frequency.value = 900;
+    }
+
     const gainNode = audioCtx.createGain();
-    
-    // Slow breath envelope
-    gainNode.gain.setValueAtTime(0.001, audioCtx.currentTime);
-    gainNode.gain.linearRampToValueAtTime(0.06, audioCtx.currentTime + 0.15);
-    gainNode.gain.linearRampToValueAtTime(0.001, audioCtx.currentTime + 0.4);
-    
+    gainNode.gain.setValueAtTime(0.01, audioCtx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.25, audioCtx.currentTime + 0.005);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.09);
+
     noise.connect(filter);
     filter.connect(gainNode);
     gainNode.connect(audioCtx.destination);
-    
     noise.start();
-    noise.stop(audioCtx.currentTime + 0.45);
 }
 
-// --- DOM ELEMENTS ---
+function playGulp() {
+    if (!state.soundEnabled) return;
+    initAudio();
+    const osc = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(90, audioCtx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(220, audioCtx.currentTime + 0.22);
+    
+    gainNode.gain.setValueAtTime(0.001, audioCtx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.35, audioCtx.currentTime + 0.04);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.22);
+    
+    osc.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.23);
+}
+
+function playDonationChime() {
+    if (!state.soundEnabled) return;
+    initAudio();
+    const notes = [293.66, 369.99, 440.00, 587.33, 739.99, 880.00]; // D Major Chord
+    notes.forEach((freq, idx) => {
+        const time = audioCtx.currentTime + idx * 0.07;
+        const osc = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        gainNode.gain.setValueAtTime(0.12, time);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, time + 0.35);
+        osc.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        osc.start(time);
+        osc.stop(time + 0.36);
+    });
+}
+
+function playSpicyBreath() {
+    if (!state.soundEnabled) return;
+    initAudio();
+    const bufferSize = audioCtx.sampleRate * 0.35;
+    const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+
+    const noise = audioCtx.createBufferSource();
+    noise.buffer = buffer;
+
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.value = 1100;
+    filter.Q.value = 1.8;
+
+    const gainNode = audioCtx.createGain();
+    gainNode.gain.setValueAtTime(0.001, audioCtx.currentTime);
+    gainNode.gain.linearRampToValueAtTime(0.07, audioCtx.currentTime + 0.12);
+    gainNode.gain.linearRampToValueAtTime(0.001, audioCtx.currentTime + 0.35);
+
+    noise.connect(filter);
+    filter.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+    noise.start();
+}
+
+// --- CONFETTI GRAPHICS ENGINE ---
+const canvas = document.getElementById('confetti-canvas');
+const ctx = canvas.getContext('2d');
+let confettiParticles = [];
+
+function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+class Confetti {
+    constructor() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * -100 - 20;
+        this.size = Math.random() * 8 + 4;
+        this.speedX = Math.random() * 4 - 2;
+        this.speedY = Math.random() * 6 + 4;
+        this.color = `hsl(${Math.random() * 360}, 100%, 60%)`;
+        this.rotation = Math.random() * 360;
+        this.rotationSpeed = Math.random() * 10 - 5;
+    }
+    update() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+        this.rotation += this.rotationSpeed;
+        if (this.y > canvas.height) {
+            this.y = -20;
+            this.x = Math.random() * canvas.width;
+        }
+    }
+    draw() {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate((this.rotation * Math.PI) / 180);
+        ctx.fillStyle = this.color;
+        ctx.fillRect(-this.size/2, -this.size/2, this.size, this.size);
+        ctx.restore();
+    }
+}
+
+function launchConfetti(count = 100) {
+    confettiParticles = [];
+    for (let i = 0; i < count; i++) {
+        confettiParticles.push(new Confetti());
+    }
+}
+
+function animateConfetti() {
+    if (confettiParticles.length > 0) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        confettiParticles.forEach((p, idx) => {
+            p.update();
+            p.draw();
+        });
+        
+        // Decay slowly
+        if (Math.random() < 0.05 && confettiParticles.length > 5) {
+            confettiParticles.pop();
+        }
+    }
+    requestAnimationFrame(animateConfetti);
+}
+animateConfetti();
+
+// --- DOM REGISTRY ---
 const el = {
     avatarImg: document.getElementById('avatar-img'),
     avatarContainer: document.getElementById('avatar-container'),
-    chewingIndicator: document.getElementById('chewing-indicator'),
-    reactionBubble: document.getElementById('reaction-bubble'),
+    avatarSpeech: document.getElementById('avatar-speech'),
     
-    // Header Info
+    // Header
     viewerCount: document.getElementById('viewer-count'),
     likeCount: document.getElementById('like-count'),
-    streamTimer: document.getElementById('stream-timer'),
+    subCount: document.getElementById('sub-count'),
+    goalSubBar: document.getElementById('goal-sub-bar'),
+    goalPercentLbl: document.getElementById('goal-percent-lbl'),
+    revenueCount: document.getElementById('revenue-count'),
     
-    // Stats Panel
-    fullnessVal: document.getElementById('fullness-val'),
-    fullnessBar: document.getElementById('fullness-bar'),
-    spiceVal: document.getElementById('spice-val'),
-    spiceBar: document.getElementById('spice-bar'),
-    caloriesVal: document.getElementById('calories-val'),
-    goldVal: document.getElementById('gold-val'),
-    
-    // Control Buttons
-    simulateDonationBtn: document.getElementById('simulate-donation-btn'),
-    streamLikeBtn: document.getElementById('stream-like-btn'),
+    // Sound & Visuals
     soundToggleBtn: document.getElementById('sound-toggle-btn'),
+    eqBars: document.getElementById('eq-bars').children,
     
-    // Food Cards
-    foodMenu: document.getElementById('food-menu-list'),
+    // Status
+    fullnessTxt: document.getElementById('fullness-txt'),
+    fullnessBar: document.getElementById('fullness-bar'),
+    spiceTxt: document.getElementById('spice-txt'),
+    spiceBar: document.getElementById('spice-bar'),
     
-    // Chat Section
+    // Chat
     chatMessages: document.getElementById('chat-messages'),
+    pinnedScArea: document.getElementById('pinned-superchats-area'),
     userChatInput: document.getElementById('user-chat-input'),
     sendChatBtn: document.getElementById('send-chat-btn'),
     
-    // Donation Overlay
-    donationOverlay: document.getElementById('donation-overlay'),
-    donationAlertText: document.getElementById('donation-alert-text'),
-    donationAlertMessage: document.getElementById('donation-alert-message'),
-    
-    // Upgrade buttons
-    upSpeedBtn: document.querySelector('#up-eat-speed .upgrade-btn'),
+    // Upgrades
+    upMicBtn: document.querySelector('#up-mic .upgrade-btn'),
+    upWaterBtn: document.querySelector('#up-water .upgrade-btn'),
     upStomachBtn: document.querySelector('#up-stomach .upgrade-btn'),
-    upSpiceBtn: document.querySelector('#up-spice-res .upgrade-btn'),
+    upMicLvl: document.getElementById('mic-lvl-lbl'),
+    upWaterLvl: document.getElementById('water-lvl-lbl'),
+    upStomachLvl: document.getElementById('stomach-lvl-lbl'),
     
-    // Levels
-    upSpeedLvl: document.getElementById('eat-speed-lvl'),
-    upStomachLvl: document.getElementById('stomach-lvl'),
-    upSpiceLvl: document.getElementById('spice-lvl')
+    // Mission
+    missionCard: document.getElementById('mission-card'),
+    missionRewardTxt: document.getElementById('mission-reward-txt'),
+    missionDescTxt: document.getElementById('mission-desc-txt'),
+    missionProgressBar: document.getElementById('mission-progress-bar'),
+    missionTimerTxt: document.getElementById('mission-timer-txt'),
+    missionStatusTxt: document.getElementById('mission-status-txt'),
+    
+    // Superchat Popup
+    superchatOverlay: document.getElementById('superchat-overlay'),
+    scAlertUser: document.getElementById('sc-alert-user'),
+    scAlertPrice: document.getElementById('sc-alert-price'),
+    scAlertMsg: document.getElementById('sc-alert-msg')
 };
 
-// --- INITIALIZATION & EVENTS ---
+// --- INITIALIZATION ---
 function init() {
-    setupEventListeners();
+    setupEvents();
     updateUI();
     
-    // Start timers
-    setInterval(updateStreamTimer, 1000);
+    // Timers
+    setInterval(tickSystem, 1000);
     setInterval(tickDigestionAndSpiceRecovery, 2000);
     setInterval(generateSimulatedChat, 3000);
-    setInterval(randomDonationTrigger, 20000); // Donation chance every 20s
     
-    // Initial hello chat
-    addChatMessage("SYSTEM", "스트리밍이 성공적으로 시작되었습니다!", "system");
-    addChatMessage("밀가루요정", "와 오늘 치비 먹방 개꿀띠~", "viewer");
+    // Start first mission in 5s
+    setTimeout(triggerRandomMission, 5000);
+    
+    addChatMessage("SYSTEM", "대기업 유튜버를 향한 실시간 스트리밍이 시작되었습니다!", "system");
 }
 
-function setupEventListeners() {
-    // Sound Toggle
+function setupEvents() {
+    // Sound On/Off
     el.soundToggleBtn.addEventListener('click', () => {
         state.soundEnabled = !state.soundEnabled;
-        el.soundToggleBtn.textContent = state.soundEnabled ? "🔊 소리 ON" : "🔇 소리 MUTE";
-        el.soundToggleBtn.classList.toggle('muted', !state.soundEnabled);
+        el.soundToggleBtn.textContent = state.soundEnabled ? "🔊 Sound On" : "🔇 Muted";
+        el.soundToggleBtn.style.background = state.soundEnabled ? "rgba(0,0,0,0.6)" : "rgba(255,0,0,0.4)";
     });
 
-    // Feeding buttons
-    const feedButtons = document.querySelectorAll('.feed-btn');
-    feedButtons.forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const card = e.target.closest('.food-card');
+    // Feeding cards click
+    document.querySelectorAll('.food-item-card').forEach(card => {
+        const feedBtn = card.querySelector('.feed-btn');
+        feedBtn.addEventListener('click', () => {
             const foodType = card.dataset.food;
             feedFood(foodType, card);
         });
@@ -357,114 +447,183 @@ function setupEventListeners() {
         });
     });
 
-    // User Chat Send
+    // User Chat Input
     el.sendChatBtn.addEventListener('click', sendUserChat);
     el.userChatInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') sendUserChat();
     });
-
-    // Simulator Actions
-    el.simulateDonationBtn.addEventListener('click', () => triggerDonation());
-    el.streamLikeBtn.addEventListener('click', () => triggerLike(true));
 }
 
-// --- STREAM TIMER ---
-function updateStreamTimer() {
+// --- CORE SYSTEM TICK (1s) ---
+function tickSystem() {
     state.streamTime++;
-    const hrs = Math.floor(state.streamTime / 3600).toString().padStart(2, '0');
-    const mins = Math.floor((state.streamTime % 3600) / 60).toString().padStart(2, '0');
-    const secs = (state.streamTime % 60).toString().padStart(2, '0');
-    el.streamTimer.textContent = `${hrs}:${mins}:${secs}`;
     
-    // Slowly decay viewers if idle
-    if (!state.isChewing && Math.random() < 0.15) {
-        adjustViewers(-2);
+    // Slowly tick up subscribers
+    let subTick = Math.floor(Math.random() * 4) + 1;
+    if (state.viewerCount > 10000) subTick += 2;
+    state.subscribers = Math.min(110000, state.subscribers + subTick);
+    
+    // Viewers logic
+    if (state.isChewing) {
+        if (Math.random() < 0.2) state.viewerCount += Math.floor(Math.random() * 40) + 10;
+    } else {
+        if (Math.random() < 0.15) state.viewerCount = Math.max(2000, state.viewerCount - Math.floor(Math.random() * 20));
     }
+    
+    // Manage active mission timer
+    if (state.activeMission) {
+        state.activeMission.timeLeft -= 1.0;
+        
+        // Check continuous conditions like fullness locks
+        if (state.activeMission.type === 'fullness_lock') {
+            const checkVal = state.activeMission.check(state);
+            if (checkVal === 'continuous') {
+                state.activeMission.progress = 1; // Completed condition for now
+            } else {
+                state.activeMission.progress = 0; // Broken
+            }
+        }
+
+        // Update Mission UI
+        const percent = (state.activeMission.timeLeft / state.activeMission.duration) * 100;
+        el.missionProgressBar.style.width = `${percent}%`;
+        el.missionTimerTxt.textContent = `${state.activeMission.timeLeft.toFixed(0)}초 남음`;
+        
+        if (state.activeMission.type === 'sweet_salty') {
+            el.missionStatusTxt.textContent = `진행도: ${state.sweetSaltyComboCount} / ${state.activeMission.target}`;
+        } else if (state.activeMission.type === 'spicy_rush') {
+            el.missionStatusTxt.textContent = `진행도: ${state.tteokbokkiCount} / ${state.activeMission.target}`;
+        } else if (state.activeMission.type === 'asmr_volume') {
+            el.missionStatusTxt.textContent = `진행도: ${state.crunchDuration} / ${state.activeMission.target}`;
+        } else {
+            el.missionStatusTxt.textContent = state.activeMission.progress >= 1 ? "유지 중! 🟢" : "조건 미달! 🔴";
+        }
+        
+        // Time over check
+        if (state.activeMission.timeLeft <= 0) {
+            evalMissionEnd();
+        }
+    }
+    
+    // Animate visualizer idle frequencies
+    if (!state.isChewing) {
+        for (let i = 0; i < el.eqBars.length; i++) {
+            el.eqBars[i].style.height = `${Math.floor(Math.random() * 12) + 5}%`;
+        }
+    }
+
+    checkMilestones();
+    updateUI();
 }
 
-// --- GAME LOGIC ---
-
-// Feed food
-function feedFood(type, cardElement) {
+// --- FEED FOOD LOOP ---
+function feedFood(type, cardEl) {
     if (state.isChewing) {
-        showBubble("아직 씹고 있어요! 냠냠...");
+        showSpeechBalloon("아직 입안에 음식이 가득해요! 냠냠...");
         return;
     }
-    
     const food = FOODS[type];
     if (!food) return;
 
-    // Check if character is too full
     if (state.fullness + food.fullness > state.maxFullness) {
-        showBubble("너무 배불러요! ㅠㅠ 소화가 필요해요!");
-        playProceduralGulp(); // play gulp sound to remind
+        showSpeechBalloon("더 이상 못 먹겠어요! ㅠㅠ 소화제가 급해!");
+        playGulp();
         return;
     }
 
     state.isChewing = true;
+    animateFlyingFood(cardEl, type);
     
-    // Animate flying food element from button to mouth
-    animateFlyingFood(cardElement, type);
-
-    // Speed upgrade modifier
-    const chewDuration = food.chewDuration * Math.pow(0.8, state.upgrades.speed.level - 1);
-
-    // Start chewing visuals
-    el.avatarContainer.classList.add('chewing');
-    el.avatarImg.src = 'assets/avatar_eating.jpg';
+    // Setup character state
+    el.avatarContainer.className = "character-wrapper state-eating";
     
-    // Sound loop during chewing
+    // Setup last eaten & update combo patterns
+    const prevEaten = state.lastEatenFood;
+    state.lastEatenFood = type;
+    
+    // Track missions criteria
+    if (state.activeMission) {
+        if (state.activeMission.type === 'spicy_rush' && type === 'tteokbokki') {
+            state.tteokbokkiCount++;
+            if (state.tteokbokkiCount >= state.activeMission.target) {
+                state.activeMission.progress = state.activeMission.target;
+            }
+        }
+        
+        if (state.activeMission.type === 'sweet_salty') {
+            // Alternate sweet/salty check
+            if ((prevEaten === 'tteokbokki' && type === 'tanghulu') || 
+                (prevEaten === 'tanghulu' && type === 'tteokbokki')) {
+                state.sweetSaltyComboCount++;
+                spawnHeartParticles(10);
+                if (state.sweetSaltyComboCount >= state.activeMission.target) {
+                    state.activeMission.progress = state.activeMission.target;
+                }
+            }
+        }
+
+        if (state.activeMission.type === 'asmr_volume' && type === 'fried_chicken') {
+            state.crunchDuration++;
+            if (state.crunchDuration >= state.activeMission.target) {
+                state.activeMission.progress = state.activeMission.target;
+            }
+        }
+    }
+
+    // Speed enhancement modifier
+    const chewDuration = food.chewDuration * Math.pow(0.82, state.upgrades.mic.level - 1);
+    
+    // Equalizer jump frequency & crunch loop
+    let ticks = 0;
     const chewInterval = setInterval(() => {
-        playProceduralCrunch(food.chewSound);
+        playCrunch(food.chewSound);
+        // Elevate visualizer heights to high values (ASMR volume feedback)
+        for (let i = 0; i < el.eqBars.length; i++) {
+            el.eqBars[i].style.height = `${Math.floor(Math.random() * 55) + 40}%`;
+        }
+        spawnCrumbsParticles();
+        ticks++;
     }, 280);
 
     setTimeout(() => {
         clearInterval(chewInterval);
-        el.avatarContainer.classList.remove('chewing');
         state.isChewing = false;
-
-        // Apply stats
+        
+        // Digest states
         state.calories += food.calorie;
         state.fullness += food.fullness;
         
-        // Spice resistance upgrade modifier
-        const spiceModifier = Math.pow(0.75, state.upgrades.spice.level - 1);
-        state.spiciness = Math.min(100, state.spiciness + (food.spice * spiceModifier));
+        // Spicy damage modifier
+        if (type === 'tteokbokki') {
+            state.spiciness = Math.min(100, state.spiciness + 45);
+        }
 
-        // Play swallow sound
-        playProceduralGulp();
-        
-        // React and update visuals
-        updateAvatarExpression();
+        playGulp();
+        updateCharacterState();
         updateUI();
         
-        // React chat
-        reactChatOnFood(food);
-
-        // Viewer increase on feeding
-        adjustViewers(Math.floor(Math.random() * 20) + 10);
-        triggerLike(false);
-
+        // Chat reactions
+        reactChatOnFeed(food);
+        
+        // Random likes boost
+        triggerLikesShower(5);
     }, chewDuration);
 }
 
-// Animate food flying into mouth
-function animateFlyingFood(cardElement, type) {
-    const imgEl = cardElement.querySelector('.food-image-wrapper img');
-    const rect = imgEl.getBoundingClientRect();
+// Animate food elements
+function animateFlyingFood(cardEl, type) {
+    const thumb = cardEl.querySelector('.food-thumb img');
+    const thumbRect = thumb.getBoundingClientRect();
     const screenRect = document.getElementById('stream-screen').getBoundingClientRect();
     
     const flyer = document.createElement('img');
-    flyer.src = imgEl.src;
+    flyer.src = thumb.src;
     flyer.className = 'flying-food';
     
-    // Calculate relative coordinates
-    const startX = rect.left - screenRect.left + (rect.width / 2) - 30;
-    const startY = rect.top - screenRect.top + (rect.height / 2) - 30;
-    
-    // End coordinate (mouth of avatar)
-    const endX = screenRect.width / 2 - 30;
-    const endY = screenRect.height * 0.65;
+    const startX = thumbRect.left - screenRect.left + (thumbRect.width / 2) - 25;
+    const startY = thumbRect.top - screenRect.top + (thumbRect.height / 2) - 25;
+    const endX = screenRect.width / 2 - 25;
+    const endY = screenRect.height * 0.55;
     
     flyer.style.setProperty('--start-x', `${startX}px`);
     flyer.style.setProperty('--start-y', `${startY}px`);
@@ -472,338 +631,522 @@ function animateFlyingFood(cardElement, type) {
     flyer.style.setProperty('--end-y', `${endY}px`);
     
     document.getElementById('stream-screen').appendChild(flyer);
-    
-    // Remove element after animation ends
-    flyer.addEventListener('animationend', () => {
-        flyer.remove();
-    });
+    flyer.addEventListener('animationend', () => flyer.remove());
 }
 
-// Update avatar expression based on stats
-function updateAvatarExpression() {
+// Character state visual update
+function updateCharacterState() {
     if (state.spiciness > 50) {
-        el.avatarImg.src = 'assets/avatar_spicy.jpg';
-        showBubble("습-하! 너무 매워요!! 살려줘! 🥛💦");
-        // Play spicy breathing sounds
+        el.avatarContainer.className = "character-wrapper state-spicy";
+        showSpeechBalloon("습-하!!! 너무 매워서 기절할 것 같아요!! 🥛🔥");
         playSpicyBreath();
+        spawnSteamParticles(10);
     } else {
-        el.avatarImg.src = 'assets/avatar_normal.jpg';
+        el.avatarContainer.className = "character-wrapper state-idle";
     }
 }
 
-// Digestion over time
+// Tick recovery
 function tickDigestionAndSpiceRecovery() {
-    // Digestion speed is affected by stomach size
-    const digestionRate = 2 + Math.floor(state.upgrades.stomach.level / 2);
+    // DIGESTION: digestion pills upgrade boost
+    const digestionRate = 3 + (state.upgrades.stomach.level - 1) * 3;
     if (state.fullness > 0) {
         state.fullness = Math.max(0, state.fullness - digestionRate);
     }
     
-    // Spice recovery
+    // SPICINESS RECOVERY: milk setup boost
+    const recoveryRate = 5 + (state.upgrades.water.level - 1) * 4;
     if (state.spiciness > 0) {
-        state.spiciness = Math.max(0, state.spiciness - 5);
-        if (state.spiciness <= 50 && el.avatarImg.src.includes('avatar_spicy')) {
-            updateAvatarExpression();
+        state.spiciness = Math.max(0, state.spiciness - recoveryRate);
+        if (state.spiciness <= 50 && el.avatarContainer.classList.contains('state-spicy')) {
+            updateCharacterState();
         }
     }
-    
     updateUI();
 }
 
-// Upgrades shop
+// --- MISSION ENGINE ---
+function triggerRandomMission() {
+    if (state.activeMission) return;
+    
+    const randTemplate = MISSION_TEMPLATES[Math.floor(Math.random() * MISSION_TEMPLATES.length)];
+    
+    // Deep copy
+    state.activeMission = {
+        ...randTemplate,
+        timeLeft: randTemplate.duration,
+        progress: 0
+    };
+    
+    // Reset combo counters
+    state.tteokbokkiCount = 0;
+    state.tanghuluCount = 0;
+    state.sweetSaltyComboCount = 0;
+    state.crunchDuration = 0;
+    
+    el.missionRewardTxt.textContent = `₩${state.activeMission.reward.toLocaleString()} 후원 예정`;
+    el.missionDescTxt.textContent = state.activeMission.desc;
+    el.missionProgressBar.style.width = '100%';
+    el.missionCard.classList.add('active');
+    
+    addChatMessage("SYSTEM", `🚨 새로운 실시간 방송 미션이 발생했습니다! [${state.activeMission.desc}]`, "system");
+}
+
+function evalMissionEnd() {
+    const mission = state.activeMission;
+    if (!mission) return;
+    
+    let isSuccess = false;
+    
+    if (mission.type === 'fullness_lock') {
+        isSuccess = mission.progress >= 1;
+    } else {
+        isSuccess = mission.progress >= mission.target;
+    }
+    
+    if (isSuccess) {
+        // SUCCESS
+        // Apply reward bonus from Mic upgrade
+        const bonusMultiplier = 1.0 + (state.upgrades.mic.level - 1) * 0.20;
+        const finalReward = Math.floor(mission.reward * bonusMultiplier);
+        
+        state.revenue += finalReward;
+        
+        // Subscriber boost
+        const subBoost = Math.floor(Math.random() * 800) + 500;
+        state.subscribers = Math.min(110000, state.subscribers + subBoost);
+        
+        // Launch Super Chat Popup
+        triggerSuperchatAlert(finalReward);
+        
+        // Launch celebration confetti
+        launchConfetti(80);
+        
+        addChatMessage("SYSTEM", `🎉 미션 성공!! ₩${finalReward.toLocaleString()} 후원을 획득했습니다! (+구독자 ${subBoost}명)`, "system");
+    } else {
+        // FAILURE
+        // Trigger negative chat comments
+        const mockCount = Math.floor(Math.random() * 3) + 2;
+        for (let i = 0; i < mockCount; i++) {
+            setTimeout(() => {
+                const randUser = RANDOM_USERNAMES[Math.floor(Math.random() * RANDOM_USERNAMES.length)];
+                const randMsg = MISSION_FAILED_CHATS[Math.floor(Math.random() * MISSION_FAILED_CHATS.length)];
+                addChatMessage(randUser, randMsg, "viewer");
+            }, i * 300);
+        }
+        
+        // Viewers drop
+        state.viewerCount = Math.max(1000, state.viewerCount - 800);
+        addChatMessage("SYSTEM", `✗ 미션 시간 초과로 실패했습니다. 시청자들이 실망했습니다.`, "system");
+    }
+    
+    // Clear active mission
+    el.missionCard.classList.remove('active');
+    state.activeMission = null;
+    
+    // Trigger next mission in 20-30s
+    setTimeout(triggerRandomMission, Math.floor(Math.random() * 10000) + 20000);
+}
+
+// --- SUPER CHAT POPUP ---
+function triggerSuperchatAlert(amount) {
+    const user = RANDOM_USERNAMES[Math.floor(Math.random() * RANDOM_USERNAMES.length)];
+    const comment = DONATION_COMMENTS_PREMIUM(amount);
+    
+    el.scAlertUser.textContent = user;
+    el.scAlertPrice.textContent = `₩${amount.toLocaleString()}`;
+    el.scAlertMsg.textContent = `"${comment}"`;
+    
+    playDonationChime();
+    el.superchatOverlay.classList.add('active');
+    
+    // Add Super Chat to chat feed
+    addSuperChatBubble(user, amount, comment);
+    
+    // Add Pinned Banner
+    addPinnedSuperchat(user, amount);
+    
+    // Spawn gold particles
+    spawnCurrencyParticles(30);
+
+    setTimeout(() => {
+        el.superchatOverlay.classList.remove('active');
+    }, 4500);
+}
+
+function DONATION_COMMENTS_PREMIUM(amount) {
+    if (amount >= 100000) {
+        return "미션 클리어 대박이다ㅋㅋㅋ 구독 박았어요! 치비 먹방 채널 영원해라!";
+    }
+    return "미션 성공 축하드려요! 리얼 ASMR 대박이네요! 화이팅!";
+}
+
+// Pinned Banner at the top of chat
+function addPinnedSuperchat(user, amount) {
+    const banner = document.createElement('div');
+    banner.className = `pinned-sc-banner sc-${getSCTierClass(amount)}`;
+    banner.innerHTML = `
+        <div class="pinned-sc-avatar">${user[0]}</div>
+        <div class="pinned-sc-details">
+            <span>${user}</span>
+            <span>₩${amount.toLocaleString()}</span>
+        </div>
+    `;
+    
+    el.pinnedScArea.appendChild(banner);
+    
+    // Animate banner progress bar decay (pins for 10s)
+    let timeLeft = 100;
+    const decayInterval = setInterval(() => {
+        timeLeft -= 1;
+        banner.style.setProperty('--progress', `${timeLeft}%`);
+        if (timeLeft <= 0) {
+            clearInterval(decayInterval);
+            banner.remove();
+        }
+    }, 100);
+}
+
+function getSCTierClass(amount) {
+    if (amount >= 120000) return 'red';
+    if (amount >= 90000) return 'orange';
+    if (amount >= 70000) return 'yellow';
+    if (amount >= 50000) return 'teal';
+    return 'blue';
+}
+
+// Add Super Chat bubble to feed
+function addSuperChatBubble(user, amount, message) {
+    const bubble = document.createElement('div');
+    bubble.className = `sc-bubble-wrapper sc-${getSCTierClass(amount)}`;
+    bubble.innerHTML = `
+        <div class="sc-bubble-header">
+            <span>⭐ ${user}</span>
+            <span>₩${amount.toLocaleString()}</span>
+        </div>
+        <div class="sc-bubble-body">
+            ${message}
+        </div>
+    `;
+    el.chatMessages.appendChild(bubble);
+    el.chatMessages.scrollTop = el.chatMessages.scrollHeight;
+}
+
+// --- REALTIME CHAT STREAM ---
+function generateSimulatedChat() {
+    if (state.activeMission && Math.random() < 0.4) {
+        // Chat focuses on the mission
+        const missionChats = [
+            "미션 가즈아!! 🔥🔥",
+            "가볍게 성공각? ㅋㅋㅋ",
+            "유튜브 대기업 되려면 미션 성공해야 됨 ㄷㄷ",
+            "치비 미션 파이팅!!",
+            "이거 깨면 10만원임? 지리네 ㅋㅋㅋ"
+        ];
+        const user = RANDOM_USERNAMES[Math.floor(Math.random() * RANDOM_USERNAMES.length)];
+        const msg = missionChats[Math.floor(Math.random() * missionChats.length)];
+        addChatMessage(user, msg);
+        return;
+    }
+    
+    let pool = GENERAL_CHATS;
+    if (!state.isChewing) {
+        pool = [...GENERAL_CHATS, ...IDLE_CHATS];
+    }
+    
+    // Random membership alert
+    if (Math.random() < 0.1) {
+        const user = RANDOM_USERNAMES[Math.floor(Math.random() * RANDOM_USERNAMES.length)];
+        const tier = MEMBERSHIP_NAMES[Math.floor(Math.random() * MEMBERSHIP_NAMES.length)];
+        const alertEl = document.createElement('div');
+        alertEl.className = 'chat-system-alert';
+        alertEl.textContent = `🎉 [${user}]님이 [${tier}] 채널 멤버십에 가입했습니다! 환영합니다! 🎉`;
+        el.chatMessages.appendChild(alertEl);
+        el.chatMessages.scrollTop = el.chatMessages.scrollHeight;
+        
+        // Sub boost
+        state.subscribers += 1;
+        updateUI();
+        return;
+    }
+    
+    const user = RANDOM_USERNAMES[Math.floor(Math.random() * RANDOM_USERNAMES.length)];
+    const msg = pool[Math.floor(Math.random() * pool.length)];
+    addChatMessage(user, msg);
+}
+
+function reactChatOnFeed(food) {
+    const size = Math.floor(Math.random() * 2) + 2;
+    for (let i = 0; i < size; i++) {
+        setTimeout(() => {
+            const user = RANDOM_USERNAMES[Math.floor(Math.random() * RANDOM_USERNAMES.length)];
+            const msg = food.comments[Math.floor(Math.random() * food.comments.length)];
+            addChatMessage(user, msg);
+        }, i * 300);
+    }
+}
+
+function addChatMessage(username, text, type = "viewer") {
+    const item = document.createElement('div');
+    item.className = `regular-chat ${type === 'user' ? 'user-message' : ''}`;
+    
+    if (type === 'system') {
+        item.innerHTML = `<div class="chat-body-text" style="color: var(--green-lime); font-weight: 700;">[방송 관제] ${text}</div>`;
+    } else {
+        item.innerHTML = `
+            <div class="chat-avatar">${username[0]}</div>
+            <div class="chat-body-text">
+                <span class="chat-sender-name">${username}</span>
+                <p>${text}</p>
+            </div>
+        `;
+    }
+    el.chatMessages.appendChild(item);
+    el.chatMessages.scrollTop = el.chatMessages.scrollHeight;
+    
+    if (el.chatMessages.children.length > 50) {
+        el.chatMessages.removeChild(el.chatMessages.firstChild);
+    }
+}
+
+function sendUserChat() {
+    const txt = el.userChatInput.value.trim();
+    if (!txt) return;
+    
+    addChatMessage("Me (크리에이터)", txt, "user");
+    el.userChatInput.value = "";
+    
+    setTimeout(() => {
+        const answers = [
+            "오늘 미션 꼭 깨보겠습니다! 감사합니다 ㅎㅎ",
+            "와주셔서 환영해요! 쩝쩝단 화이팅!",
+            "치킨 너무 맛있어요 ㅠㅠ 최고네요",
+            "구독 꼭 부탁드려요!! 실버버튼 고지가 바로 앞!"
+        ];
+        showSpeechBalloon(answers[Math.floor(Math.random() * answers.length)]);
+    }, 900);
+}
+
+// --- EQUIPMENT UPGRADE SHOP ---
 function buyUpgrade(type) {
     const upgrade = state.upgrades[type];
     if (!upgrade) return;
     
-    if (upgrade.level >= upgrade.maxLevel) {
-        showBubble("이미 최고 레벨입니다!");
-        return;
-    }
+    if (upgrade.level >= upgrade.maxLevel) return;
     
     const cost = getUpgradeCost(upgrade);
-    if (state.gold < cost) {
-        showBubble("별풍선(후원금)이 부족합니다! ㅠㅠ");
+    if (state.revenue < cost) {
+        showSpeechBalloon("돈(수익)이 부족해요! ㅠㅠ 미션을 깨서 슈퍼챗을 유도해주세요!");
         return;
     }
     
-    state.gold -= cost;
+    state.revenue -= cost;
     upgrade.level++;
     
-    // Apply stats upgrades immediately if needed
+    // Apply changes immediately
     if (type === 'stomach') {
-        state.maxFullness = 100 + (upgrade.level - 1) * 35;
+        state.maxFullness = 100 + (upgrade.level - 1) * 30;
     }
     
-    playProceduralGulp(); // sound chime
+    playGulp();
     updateUI();
-    addChatMessage("SYSTEM", `업그레이드 성공! 레벨이 상승했습니다.`, "system");
+    addChatMessage("SYSTEM", `${type === 'mic' ? 'ASMR 마이크' : type === 'water' ? '우유 해소수' : '위장 소화제'}가 레벨업 되었습니다! (Lv.${upgrade.level})`, "system");
 }
 
 function getUpgradeCost(upgrade) {
     return Math.floor(upgrade.baseCost * Math.pow(upgrade.costMultiplier, upgrade.level - 1));
 }
 
-// --- CHAT SYSTEM ---
+// --- PARTICLES ENGINE ---
 
-// Add chat message
-function addChatMessage(username, text, type = "viewer") {
-    const chatItem = document.createElement('div');
-    chatItem.className = `chat-item ${type === 'user' ? 'user-message' : type === 'donation' ? 'donation-message' : ''}`;
-    
-    if (type === 'system') {
-        chatItem.innerHTML = `<span class="chat-text" style="color: var(--accent-green); font-weight: 600;">[알림] ${text}</span>`;
-    } else if (type === 'donation') {
-        chatItem.innerHTML = `
-            <span class="chat-username">⭐ ${username}</span>
-            <span class="chat-text" style="font-weight: 700;">${text}</span>
-        `;
-    } else {
-        chatItem.innerHTML = `
-            <span class="chat-username">${username}</span>
-            <span class="chat-text">${text}</span>
-        `;
-    }
-    
-    el.chatMessages.appendChild(chatItem);
-    
-    // Scroll to bottom
-    el.chatMessages.scrollTop = el.chatMessages.scrollHeight;
-    
-    // Keep max 50 chat messages for performance
-    if (el.chatMessages.children.length > 50) {
-        el.chatMessages.removeChild(el.chatMessages.firstChild);
-    }
-}
-
-// User send chat
-function sendUserChat() {
-    const text = el.userChatInput.value.trim();
-    if (!text) return;
-    
-    addChatMessage("Me (스트리머)", text, "user");
-    el.userChatInput.value = "";
-    
-    // Character responds after 1s
-    setTimeout(() => {
-        const responses = ["감사합니다! ㅎㅎ", "넵! 맛있게 먹을게요!", "오 정말요? 고마워요!", "화이팅!"];
-        const randResponse = responses[Math.floor(Math.random() * responses.length)];
-        showBubble(randResponse);
-        adjustViewers(1);
-    }, 1000);
-}
-
-// Random chat generation
-function generateSimulatedChat() {
-    let messagePool = GENERAL_CHAT_MESSAGES;
-    
-    if (!state.isChewing) {
-        if (state.fullness > 80) {
-            messagePool = ["와 배 엄청 부르신 듯", "배 터지겠어요 살살 드삼", "푸드파이터 급이네ㄷㄷ"];
-        } else {
-            messagePool = [...GENERAL_CHAT_MESSAGES, ...IDLE_CHAT_MESSAGES];
-        }
-    } else {
-        // Find which food they are chewing
-        // Just react to current spiciness or high fullness
-        if (state.spiciness > 50) {
-            messagePool = ["우유 드세요! 🥛💦", "스트리머 매워 기절함ㅋㅋㅋ", "매운맛 보소", "불닭보다 매운듯"];
-        }
-    }
-    
-    const randUser = RANDOM_USERNAMES[Math.floor(Math.random() * RANDOM_USERNAMES.length)];
-    const randMsg = messagePool[Math.floor(Math.random() * messagePool.length)];
-    
-    addChatMessage(randUser, randMsg, "viewer");
-}
-
-// React chat directly to food item
-function reactChatOnFood(food) {
-    const size = Math.floor(Math.random() * 3) + 2; // 2 to 4 messages at once
-    for (let i = 0; i < size; i++) {
-        setTimeout(() => {
-            const randUser = RANDOM_USERNAMES[Math.floor(Math.random() * RANDOM_USERNAMES.length)];
-            const randMsg = food.messages[Math.floor(Math.random() * food.messages.length)];
-            addChatMessage(randUser, randMsg, "viewer");
-        }, i * 300);
-    }
-}
-
-// --- DONATIONS (STAR BALLOONS) ---
-
-function randomDonationTrigger() {
-    // If stream is active, there is a chance of donation
-    // Chance increases with higher viewer count or sweetness (Tanghulu)
-    let donationChance = 0.3; // base 30%
-    if (state.viewerCount > 500) donationChance += 0.2;
-    if (state.isChewing) donationChance += 0.15;
-    
-    if (Math.random() < donationChance) {
-        triggerDonation();
-    }
-}
-
-function triggerDonation(customAmount = 0) {
-    const donator = RANDOM_USERNAMES[Math.floor(Math.random() * RANDOM_USERNAMES.length)];
-    
-    // Choose star balloon amount
-    const amounts = [10, 30, 50, 100, 200, 500];
-    const amount = customAmount > 0 ? customAmount : amounts[Math.floor(Math.random() * amounts.length)];
-    
-    const comment = DONATION_COMMENTS[Math.floor(Math.random() * DONATION_COMMENTS.length)];
-    
-    // Apply gold (donations)
-    state.gold += amount;
-    
-    // Donation effect arpeggio
-    playDonationChime();
-    
-    // Dynamic chat message
-    addChatMessage(donator, `별풍선 ${amount}개 후원! "${comment}"`, "donation");
-    
-    // Trigger visual overlay alert
-    showDonationAlert(donator, amount, comment);
-    
-    // Spawn floating particle elements (coins/stars)
-    spawnDonationParticles(25);
-    
-    // Boost viewers and likes
-    adjustViewers(Math.floor(amount / 2));
-    state.likeCount += amount;
-    
-    updateUI();
-}
-
-function showDonationAlert(donator, count, message) {
-    el.donationOverlay.querySelector('.donator-name').textContent = donator;
-    el.donationOverlay.querySelector('.star-balloon-count').textContent = `${count}개`;
-    el.donationAlertMessage.textContent = `"${message}"`;
-    
-    el.donationOverlay.classList.add('active');
-    
-    setTimeout(() => {
-        el.donationOverlay.classList.remove('active');
-    }, 4000); // Alert lasts for 4s
-}
-
-// Floating stars / coins animation
-function spawnDonationParticles(count) {
+function spawnCrumbsParticles() {
     const screen = document.getElementById('stream-screen');
-    const colors = ['⭐', '🪙', '✨', '💛', '💖'];
+    const crumbs = ['🥖', '🥖', '✨', '🔸', '🟡'];
     
+    for (let i = 0; i < 3; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'floating-particle';
+        particle.textContent = crumbs[Math.floor(Math.random() * crumbs.length)];
+        
+        // Spawn near mouth
+        particle.style.left = '50%';
+        particle.style.bottom = '35%';
+        
+        const moveX = (Math.random() - 0.5) * 120;
+        const moveY = (Math.random() * 50) + 20; // spit downwards/sides
+        const rotate = Math.random() * 180;
+        
+        particle.style.setProperty('--x', `${moveX}px`);
+        particle.style.setProperty('--y', `${moveY}px`);
+        particle.style.setProperty('--r', `${rotate}deg`);
+        
+        screen.appendChild(particle);
+        particle.addEventListener('animationend', () => particle.remove());
+    }
+}
+
+function spawnSteamParticles(count) {
+    const screen = document.getElementById('stream-screen');
     for (let i = 0; i < count; i++) {
         setTimeout(() => {
             const particle = document.createElement('div');
             particle.className = 'floating-particle';
-            particle.textContent = colors[Math.floor(Math.random() * colors.length)];
+            particle.textContent = Math.random() < 0.5 ? '💨' : '🔥';
             
-            // Random horizontal start, bottom vertical start
-            const startX = Math.random() * 80 + 10; // 10% to 90% width
-            particle.style.left = `${startX}%`;
-            particle.style.bottom = '10%';
+            // Spawn near head
+            particle.style.left = `${Math.random() * 20 + 40}%`; // center 40% - 60%
+            particle.style.bottom = '55%';
             
-            // Random translation endpoints
-            const moveX = (Math.random() - 0.5) * 200; // -100px to 100px
-            const moveY = -(Math.random() * 250 + 150); // -150px to -400px
-            const rotate = Math.random() * 360;
+            const moveX = (Math.random() - 0.5) * 60;
+            const moveY = -(Math.random() * 120 + 80); // float upwards
+            const rotate = Math.random() * 90;
             
             particle.style.setProperty('--x', `${moveX}px`);
             particle.style.setProperty('--y', `${moveY}px`);
             particle.style.setProperty('--r', `${rotate}deg`);
             
             screen.appendChild(particle);
-            
-            particle.addEventListener('animationend', () => {
-                particle.remove();
-            });
-        }, i * 50);
+            particle.addEventListener('animationend', () => particle.remove());
+        }, i * 100);
     }
 }
 
-// Likes boost
-function triggerLike(byUser = false) {
-    state.likeCount++;
+function spawnHeartParticles(count) {
+    const screen = document.getElementById('stream-screen');
+    for (let i = 0; i < count; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'floating-particle';
+        particle.textContent = '💖';
+        
+        // Spawn near character
+        particle.style.left = `${Math.random() * 40 + 30}%`;
+        particle.style.bottom = '30%';
+        
+        const moveX = (Math.random() - 0.5) * 160;
+        const moveY = -(Math.random() * 200 + 100);
+        
+        particle.style.setProperty('--x', `${moveX}px`);
+        particle.style.setProperty('--y', `${moveY}px`);
+        particle.style.setProperty('--r', `${(Math.random() - 0.5) * 60}deg`);
+        
+        screen.appendChild(particle);
+        particle.addEventListener('animationend', () => particle.remove());
+    }
+}
+
+function spawnCurrencyParticles(count) {
+    const screen = document.getElementById('stream-screen');
+    const coins = ['💵', '🪙', '✨', '💖', '⭐'];
+    for (let i = 0; i < count; i++) {
+        setTimeout(() => {
+            const particle = document.createElement('div');
+            particle.className = 'floating-particle';
+            particle.textContent = coins[Math.floor(Math.random() * coins.length)];
+            
+            particle.style.left = `${Math.random() * 80 + 10}%`;
+            particle.style.bottom = '10%';
+            
+            const moveX = (Math.random() - 0.5) * 220;
+            const moveY = -(Math.random() * 300 + 150);
+            
+            particle.style.setProperty('--x', `${moveX}px`);
+            particle.style.setProperty('--y', `${moveY}px`);
+            particle.style.setProperty('--r', `${Math.random() * 360}deg`);
+            
+            screen.appendChild(particle);
+            particle.addEventListener('animationend', () => particle.remove());
+        }, i * 60);
+    }
+}
+
+function triggerLikesShower(count) {
+    state.likeCount += count;
     el.likeCount.textContent = state.likeCount.toLocaleString();
     
-    // Spawn floating heart
-    const heart = document.createElement('div');
-    heart.className = 'floating-particle';
-    heart.textContent = '💖';
-    
-    // Start at bottom center
-    heart.style.left = '50%';
-    heart.style.bottom = '15%';
-    
-    const moveX = (Math.random() - 0.5) * 150;
-    const moveY = -(Math.random() * 150 + 100);
-    
-    heart.style.setProperty('--x', `${moveX}px`);
-    heart.style.setProperty('--y', `${moveY}px`);
-    heart.style.setProperty('--r', `${(Math.random() - 0.5) * 60}deg`);
-    
-    document.getElementById('stream-screen').appendChild(heart);
-    heart.addEventListener('animationend', () => heart.remove());
-    
-    if (byUser) {
-        adjustViewers(1);
+    const screen = document.getElementById('stream-screen');
+    for (let i = 0; i < count; i++) {
+        const heart = document.createElement('div');
+        heart.className = 'floating-particle';
+        heart.textContent = '❤️';
+        heart.style.left = `${Math.random() * 60 + 20}%`;
+        heart.style.bottom = '15%';
+        
+        const moveX = (Math.random() - 0.5) * 120;
+        const moveY = -(Math.random() * 150 + 80);
+        
+        heart.style.setProperty('--x', `${moveX}px`);
+        heart.style.setProperty('--y', `${moveY}px`);
+        heart.style.setProperty('--r', `${(Math.random() - 0.5) * 45}deg`);
+        
+        screen.appendChild(heart);
+        heart.addEventListener('animationend', () => heart.remove());
     }
 }
 
-// --- UTILITY FUNCTIONS ---
-
-function adjustViewers(amount) {
-    state.viewerCount = Math.max(10, state.viewerCount + amount);
-    el.viewerCount.textContent = state.viewerCount.toLocaleString();
+// --- MILESTONES (SILVER BUTTON) ---
+function checkMilestones() {
+    if (state.subscribers >= state.goalSubscribers && !state.silverAwardAchieved) {
+        state.silverAwardAchieved = true;
+        // Launch giant celebration
+        launchConfetti(250);
+        playDonationChime();
+        
+        // Show Silver play button modal
+        document.getElementById('silver-modal').style.display = 'flex';
+        addChatMessage("SYSTEM", "🏆 [경축] 실시간 구독자 10만 돌파!! 유튜브 코리아 실버버튼 획득! 대기업 유튜버 등극! 🏆", "system");
+    }
 }
 
-function showBubble(text) {
-    el.reactionBubble.textContent = text;
-    el.reactionBubble.classList.add('active');
+// --- INTERACTION ---
+function showSpeechBalloon(text) {
+    el.avatarSpeech.textContent = text;
+    el.avatarSpeech.classList.add('active');
     
-    // Hide bubble after 3 seconds
-    if (window.bubbleTimeout) clearTimeout(window.bubbleTimeout);
-    window.bubbleTimeout = setTimeout(() => {
-        el.reactionBubble.classList.remove('active');
+    if (window.balloonTimeout) clearTimeout(window.balloonTimeout);
+    window.balloonTimeout = setTimeout(() => {
+        el.avatarSpeech.classList.remove('active');
     }, 3000);
 }
 
-// Update DOM elements matching state
+// --- UI DATA SYNC ---
 function updateUI() {
-    // Fullness
-    const fullnessPercent = Math.min(100, (state.fullness / state.maxFullness) * 100);
-    el.fullnessVal.textContent = `${Math.floor(fullnessPercent)}%`;
-    el.fullnessBar.style.width = `${fullnessPercent}%`;
-    
-    // Spiciness
-    el.spiceVal.textContent = `${Math.floor(state.spiciness)}%`;
-    el.spiceBar.style.width = `${state.spiciness}%`;
-    
-    // Calories & Gold
-    el.caloriesVal.textContent = `${state.calories.toLocaleString()} kcal`;
-    el.goldVal.textContent = `${state.gold.toLocaleString()}개`;
-    
-    // Viewers & Likes
+    // Analytics
     el.viewerCount.textContent = state.viewerCount.toLocaleString();
     el.likeCount.textContent = state.likeCount.toLocaleString();
+    el.subCount.textContent = state.subscribers.toLocaleString();
+    el.revenueCount.textContent = `₩${state.revenue.toLocaleString()}`;
     
-    // Upgrades Costs and level text
-    updateUpgradeButton(el.upSpeedBtn, el.upSpeedLvl, state.upgrades.speed);
-    updateUpgradeButton(el.upStomachBtn, el.upStomachLvl, state.upgrades.stomach);
-    updateUpgradeButton(el.upSpiceBtn, el.upSpiceLvl, state.upgrades.spice);
+    // Sub progress
+    const subPercent = Math.min(100, (state.subscribers / state.goalSubscribers) * 100);
+    el.goalSubBar.style.width = `${subPercent}%`;
+    el.goalPercentLbl.textContent = `${subPercent.toFixed(2)}%`;
+    
+    // Gauges
+    const fullnessPercent = Math.min(100, (state.fullness / state.maxFullness) * 100);
+    el.fullnessTxt.textContent = `${Math.floor(fullnessPercent)}%`;
+    el.fullnessBar.style.width = `${fullnessPercent}%`;
+    
+    el.spiceTxt.textContent = `${Math.floor(state.spiciness)}%`;
+    el.spiceBar.style.width = `${state.spiciness}%`;
+    
+    // Upgrades
+    updateUpgradeBtn(el.upMicBtn, el.upMicLvl, state.upgrades.mic);
+    updateUpgradeBtn(el.upWaterBtn, el.upWaterLvl, state.upgrades.water);
+    updateUpgradeBtn(el.upStomachBtn, el.upStomachLvl, state.upgrades.stomach);
 }
 
-function updateUpgradeButton(btnElement, lvlElement, upgrade) {
-    lvlElement.textContent = `Lv.${upgrade.level}`;
-    
+function updateUpgradeBtn(btn, lvlLbl, upgrade) {
+    lvlLbl.textContent = `Lv.${upgrade.level}`;
     if (upgrade.level >= upgrade.maxLevel) {
-        btnElement.textContent = "MAX";
-        btnElement.className = "upgrade-btn maxed";
-        btnElement.disabled = true;
+        btn.textContent = "MAX";
+        btn.className = "upgrade-btn maxed";
+        btn.disabled = true;
     } else {
         const cost = getUpgradeCost(upgrade);
-        btnElement.textContent = `⭐ ${cost}개`;
-        btnElement.disabled = state.gold < cost;
+        btn.textContent = `₩${cost.toLocaleString()}`;
+        btn.disabled = state.revenue < cost;
     }
 }
 
-// Start simulation
+// Initialize system
 init();
