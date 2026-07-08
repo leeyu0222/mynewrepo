@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chibi Mukbang Simulator - 침샘 자극 먹방 시뮬레이터</title>
+    <meta name="description" content="귀여운 치비 캐릭터에게 맛있는 음식을 먹이고, 실시간 채팅 피드백과 별풍선 후원을 받으며 최고의 먹방 스트리머가 되어보세요!">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Noto+Sans+KR:wght@300;400;700;900&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- TOP BROADCAST HEADER -->
+        <header class="stream-header">
+            <div class="stream-title-group">
+                <span class="live-badge" id="live-indicator">● LIVE</span>
+                <h1 class="stream-title" id="main-title">🌸 냠냠 치비의 폭풍 먹방 실시간 스트리밍! 🌸</h1>
+            </div>
+            <div class="stream-meta">
+                <div class="meta-item">
+                    <span class="meta-icon">👁️</span>
+                    <span id="viewer-count" class="meta-value">1,240</span>명 시청 중
+                </div>
+                <div class="meta-item">
+                    <span class="meta-icon">❤️</span>
+                    <span id="like-count" class="meta-value">0</span> 추천
+                </div>
+                <div class="meta-item">
+                    <span class="meta-icon">⏱️</span>
+                    <span id="stream-timer" class="meta-value">00:00:00</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- MAIN LAYOUT GRID -->
+        <main class="main-layout">
+            <!-- LEFT PANEL: LIVE CHAT -->
+            <section class="panel chat-panel" id="chat-section">
+                <div class="panel-header">
+                    <h2>💬 실시간 대화창</h2>
+                    <span class="chat-status">연결됨</span>
+                </div>
+                <div class="chat-container" id="chat-messages">
+                    <!-- Chat messages will be dynamically added here -->
+                </div>
+                <div class="chat-input-area">
+                    <input type="text" id="user-chat-input" placeholder="스트리머에게 메시지 보내기..." autocomplete="off">
+                    <button id="send-chat-btn">전송</button>
+                </div>
+            </section>
+
+            <!-- CENTER PANEL: LIVE VIDEO STREAM & FOOD TABLE -->
+            <section class="video-panel">
+                <!-- Virtual Stream Screen -->
+                <div class="stream-screen" id="stream-screen">
+                    <!-- Floating coins / stars container -->
+                    <div class="effect-layer" id="effect-layer"></div>
+                    
+                    <!-- Sound Toggle -->
+                    <button class="sound-toggle" id="sound-toggle-btn" title="소리 켜기/끄기">🔊 소리 ON</button>
+                    
+                    <!-- Fullscreen donation overlay -->
+                    <div class="donation-overlay" id="donation-overlay">
+                        <div class="donation-alert-box">
+                            <div class="star-animation">⭐</div>
+                            <div class="donation-text" id="donation-alert-text">
+                                <span class="donator-name">천사팬</span>님이 <span class="star-balloon-count">100개</span> 후원!
+                            </div>
+                            <div class="donation-message" id="donation-alert-message">"오늘 치킨 먹방 너무 맛있어 보여요!"</div>
+                        </div>
+                    </div>
+
+                    <!-- Avatar Area -->
+                    <div class="avatar-container" id="avatar-container">
+                        <img src="assets/avatar_normal.jpg" alt="Chibi Avatar" class="avatar-image" id="avatar-img">
+                        <div class="chewing-indicator" id="chewing-indicator">냠냠...</div>
+                        <div class="reaction-bubble" id="reaction-bubble">안녕하세요!</div>
+                    </div>
+                </div>
+
+                <!-- Food Table Display -->
+                <div class="food-table-container">
+                    <h3 class="section-title">🍽️ 오늘의 먹방 메뉴판</h3>
+                    <div class="food-menu" id="food-menu-list">
+                        <!-- Food card 1: Tteokbokki -->
+                        <div class="food-card" id="food-tteokbokki" data-food="tteokbokki">
+                            <div class="food-image-wrapper">
+                                <img src="assets/tteokbokki.jpg" alt="매운 떡볶이">
+                            </div>
+                            <div class="food-info">
+                                <h4 class="food-name">🔥 불타는 매운 떡볶이</h4>
+                                <p class="food-desc">매콤달콤 쫄깃함! 시청자 반응 극대화</p>
+                                <div class="food-stats">
+                                    <span>🌶️ 맵기: +40</span>
+                                    <span>😋 포만감: +15</span>
+                                    <span>⚡ 속도: +10%</span>
+                                </div>
+                                <button class="feed-btn">한 입 먹이기 (무료)</button>
+                            </div>
+                        </div>
+
+                        <!-- Food card 2: Fried Chicken -->
+                        <div class="food-card" id="food-chicken" data-food="fried_chicken">
+                            <div class="food-image-wrapper">
+                                <img src="assets/fried_chicken.jpg" alt="바삭한 후라이드 치킨">
+                            </div>
+                            <div class="food-info">
+                                <h4 class="food-name">🍗 황금 바삭 후라이드 치킨</h4>
+                                <p class="food-desc">바삭바삭 소리 자극! 높은 만족도와 포만감</p>
+                                <div class="food-stats">
+                                    <span>🍗 만족도: +45</span>
+                                    <span>😋 포만감: +35</span>
+                                    <span>🔊 소리: +30%</span>
+                                </div>
+                                <button class="feed-btn">한 입 먹이기 (무료)</button>
+                            </div>
+                        </div>
+
+                        <!-- Food card 3: Tanghulu -->
+                        <div class="food-card" id="food-tanghulu" data-food="tanghulu">
+                            <div class="food-image-wrapper">
+                                <img src="assets/tanghulu.jpg" alt="달콤 탕후루">
+                            </div>
+                            <div class="food-info">
+                                <h4 class="food-name">🍓 반짝 설탕막 딸기 탕후루</h4>
+                                <p class="food-desc">ASMR 정석 바삭달콤함! 도파민 폭발</p>
+                                <div class="food-stats">
+                                    <span>🍭 단맛: +50</span>
+                                    <span>😋 포만감: +10</span>
+                                    <span>⭐ 후원 확률: +25%</span>
+                                </div>
+                                <button class="feed-btn">한 입 먹이기 (무료)</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- RIGHT PANEL: STATS & UPGRADES -->
+            <section class="panel stats-panel">
+                <!-- Streamer Stats -->
+                <div class="panel-section stats-section">
+                    <h2>📊 스트리머 능력치</h2>
+                    <div class="progress-bar-group">
+                        <div class="bar-label">
+                            <span>😋 포만감 (Fullness)</span>
+                            <span id="fullness-val">0%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="bar-fill fullness-fill" id="fullness-bar" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <div class="progress-bar-group">
+                        <div class="bar-label">
+                            <span>🌶️ 맵기 게이지 (Spiciness)</span>
+                            <span id="spice-val">0%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="bar-fill spice-fill" id="spice-bar" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <span class="stat-title">🔥 섭취 칼로리</span>
+                            <span class="stat-value" id="calories-val">0 kcal</span>
+                        </div>
+                        <div class="stat-card gold-card">
+                            <span class="stat-title">⭐ 후원금 (별풍선)</span>
+                            <span class="stat-value" id="gold-val">0개</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Simulation controls (Debug/Cheats) -->
+                <div class="panel-section debug-section">
+                    <h2>🕹️ 스트림 이벤트 제어</h2>
+                    <div class="btn-group-row">
+                        <button class="action-btn" id="simulate-donation-btn">🎁 강제 후원 발생</button>
+                        <button class="action-btn" id="stream-like-btn">💖 좋아요 누르기</button>
+                    </div>
+                </div>
+
+                <!-- Upgrades / Shop -->
+                <div class="panel-section shop-section">
+                    <h2>🛒 스트리머 레벨업 & 상점</h2>
+                    <div class="upgrade-list">
+                        <!-- Upgrade 1 -->
+                        <div class="upgrade-item" id="up-eat-speed">
+                            <div class="upgrade-info">
+                                <span class="upgrade-name">⚡ 씹는 속도 강화</span>
+                                <span class="upgrade-level" id="eat-speed-lvl">Lv.1</span>
+                                <p class="upgrade-desc">음식을 더 빨리 먹어 회전율을 높입니다.</p>
+                            </div>
+                            <button class="upgrade-btn" data-upgrade="speed">⭐ 50개</button>
+                        </div>
+
+                        <!-- Upgrade 2 -->
+                        <div class="upgrade-item" id="up-stomach">
+                            <div class="upgrade-info">
+                                <span class="upgrade-name">🥣 위장 용량 확장</span>
+                                <span class="upgrade-level" id="stomach-lvl">Lv.1</span>
+                                <p class="upgrade-desc">최대 포만감 용량을 늘려 더 오래 먹방을 진행합니다.</p>
+                            </div>
+                            <button class="upgrade-btn" data-upgrade="stomach">⭐ 80개</button>
+                        </div>
+
+                        <!-- Upgrade 3 -->
+                        <div class="upgrade-item" id="up-spice-res">
+                            <div class="upgrade-info">
+                                <span class="upgrade-name">🥛 매운맛 내성 강화</span>
+                                <span class="upgrade-level" id="spice-lvl">Lv.1</span>
+                                <p class="upgrade-desc">매운 음식을 먹어도 덜 힘들어합니다.</p>
+                            </div>
+                            <button class="upgrade-btn" data-upgrade="spice">⭐ 100개</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
